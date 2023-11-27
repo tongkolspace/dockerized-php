@@ -1,0 +1,214 @@
+# PHP Docker Stack
+
+Merupakah docker stack `production ready` untuk aplikasi PHP 
+
+| Container  | Service | Deskripsi |
+|------------|---------|-----------|
+| reverse-proxy | reverse proxy | [traefik](https://hub.docker.com/_/traefik)  |
+| php | php-fpm 8.1 | [EasyEngine php-fpm](https://hub.docker.com/r/easyengine/php/) / wordpress:6.4.1-php8.1  |
+| nginx | nginx | [Nginx EE](https://hub.docker.com/r/tongkolspace/nginx-ee)  |
+| redis | redis | [redis](https://hub.docker.com/_/redis)  |
+| workspace | Cron & Supervisor | [workspace](https://hub.docker.com/r/tongkolspace/workspace) |
+
+# Penjelasan Ringkas
+
+
+```
+git clone
+cd docker
+cp .env-sample .env
+docker-compose up 
+# atau jika hanya butuh web service saja
+docker-compose up nginx workspace
+```
+
+Tambahan domain dalam file `.env` ke hostfile
+
+**Sesuaikan permission**
+```
+cd /wordpress/
+sudo find . -type f -exec chmod 664 {} \;
+sudo find . -type d -exec chmod 775 {} \;
+sudo chown $(whoami):www-data . -R
+```
+
+**Prod / Stagging**
+
+Untuk menjalankan docker compose pada environment dev harap mengcopy docker-compose.yml dan .env-sample
+
+```
+cd docker
+cp docker-compose.yml docker-compose-dev.yml
+cp .env-sample dev.env
+docker-compose -f docker-compose-dev.yml --env-file dev.env up 
+```
+
+Gunakan php-fpm/php-prod.ini pada aplikasi produksi
+
+**Sesuaikan permission**
+```
+cd /folder-project/
+sudo find . -type f -exec chmod 644 {} \;
+sudo find . -type d -exec chmod 755 {} \;
+sudo find wp-content -type f -exec chmod 775 {} \;
+sudo chmod 775 wp-config.php
+sudo chown www-data:www-data . -R
+```
+
+# Services
+
+## Web App
+
+- Aplikasi PHP http://domain
+- PHPMyAdmin http://domain/pma/ 
+
+## Background Job
+
+cron : `docker/workspace/cron-{APP-TYPE}`
+supervisor : `supervisor.d/{APP-TYPE}.conf`
+
+Supervisor dan cron harus berjalan dengan user `www-data`
+
+```
+# Cron 
+* * * * * su -s /bin/sh www-data -c '/usr/local/bin/wp cron event run --due-now --path=/var/www/html/wp' > /proc/1/fd/1 2>&1
+00 04 * * * su -s /bin/sh www-data -c '/usr/local/bin/wp cache flush --path=/var/www/html/wp' > /proc/1/fd/1 2>&1
+```
+
+
+## Eksekusi Command Container
+
+Gunakan container `workspace` untuk menjalankan perintah `wp` atau `npm`. Perintah harus dijalankan sebagai `www-data` dengan cara menggunakan wrapper `exec-www`
+
+```bash
+docker compose exec workspace bash
+exec-www wp core udate
+```
+
+**MySQL**
+Akses MySQL
+```
+docker-compose exec db bash
+mysql -u root -p$MYSQL_ROOT_PASSWORD
+```
+
+Untuk melakukan import data mysql 
+
+```
+docker compose exec db mysql -u $USER -p$PASSWORD DB_NAME < file.sql
+```
+
+## Konfigurasi php.ini
+
+sesuaikan php ini sesuai kebutuhan pada php-fpm/php-(dev|prod).ini
+
+## Nginx 
+
+Sesuaikan upstream service docker php fpm dan redis pada `nginx/conf.d-extra` jika dibutuhkan. Pastikan berjalan dengan user www-data
+
+
+### WordPress Cache
+
+Untuk menggunakan cache ganti php-fpm pada `nginx/sites-enabled/default.conf`
+
+```
+#include common-extra/php-fpm.conf;
+include common-extra/php-fpm-redis-cache.conf;
+```
+
+Secara default user tidak login akan tercache. 
+Jika halaman tidak ingin dicache bisa mengirimkan header `no-cache` 
+Untuk mengatur exclude cache buka halaman berikut pada WordPress `wp-admin/options-general.php?page=exclude-cache`
+
+# Ownership
+
+Ownership file pada dokcer  perlu  diperhatikan dengan seksama. Volume yang di-mount pada docker container akan memiliki GUID dan UID yang sama dengan GUID dan UID pada host machine
+
+Untuk melihat UID dan GUID dapat dicek dengan perintah `id`
+
+```bash
+$ id
+uid=1000(kasatka) gid=1000(kasatka) groups=1000(kasatka),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),116(netdev),119(libvirt),999(docker)
+```
+User kasatka memiliki uid 1000 yang merupakan uid pertama non root dalam sistem linux. Jika  kita melakukan mount folder `/var/www/html` maka pada docker container maka akan terdeteksi UID file dan folder adalah 1000. User kasatka tidak terbaca karena user tersebut tidak dalam container linux maka dari itu ownershipnya menggunakan uid
+
+```bash
+# ls -lsa
+total 424508
+     4 drwxrwxr-x 170     1000 www-data      4096 Nov 22 18:40  .
+     4 drwxr-xr-x   3 root     root          4096 Nov 22 18:50  ..
+     4 drwxrwxr-x   3     1000 www-data      4096 Nov 30  2019  .fr-WGqm8M
+     4 drwxrwxr-x   3     1000 www-data      4096 Mar 27  2020  .well-known
+```
+
+Dalam web development biasanya user biasanya memiliki group  yang sama dengan www-data (gid=33). Agar tidak terjadi konflik sangat penting ketika melakukan perintah di server untuk menggunakan user www-data, karena user www-data secara universal memiliki uid=33
+
+```bash
+Container
+# id www-data
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+Host
+$id www-data
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
+
+## Strategi File Permission
+
+Pada mesin dev pastikan ada user www-data dengan uid=33, kemudian tambahkan user saat ini kedalam group www-data
+
+```bash
+sudo addgroup --system --gid 33 www-data
+sudo adduser --system --uid 33 --gid 33 --no-create-home www-data
+sudo usermod -a -G www-data $(whoami)
+```
+  
+Pada mesin local gunakan  permission group write agar baik developer (UID=1000) dan user www-data (UID=33) pada docker bisa write
+
+```bash
+cd /folder-project/
+sudo find . -type f -exec chmod 664 {} \;
+sudo find . -type d -exec chmod 775 {} \;
+sudo chown $(whoami):www-data . -R
+```
+
+Pada mesin docker perlu dirubah permision waktu deploy , seharusnya cukup dirubah 1 x
+Jangan merubah permission ke file 644 dan directory 755 di local karena akan merubah commit git
+
+**dev / prod**
+```bash
+cd /folder-project/
+sudo find . -type f -exec chmod 644 {} \;
+sudo find . -type d -exec chmod 755 {} \;
+sudo find wp-content -type f -exec chmod 775 {} \;
+sudo chmod 775 wp-config.php
+sudo chown www-data:www-data . -R
+```
+
+# Penjelasan cara kerja WordPress
+
+Pada WordPress file `wp-config.php` harus selalu terinclude ke dalam git repo, hal ini dimaksudkan agar aplikasi dari repository dapat langsung dideploy.
+Setiap konfigurasi pada `wp-config.php` yang memiliki perbedaan pada environment dev, stagging dan prod wajib wrap dengan perintah berikut : 
+
+```
+define( 'API_ENV', getenv_docker('API_ENV', 'dev') );
+define( 'API_KEY', getenv_docker('API_KEY', 'key') );
+```
+
+Pada contoh diatas `API_ENV` dan `API_KEY` perlu dimasukkan kedalam file `.env` pada folder `docker`
+
+
+# Todo 
+- [x] Supervisor
+- [x] Redis
+- [x] Cron
+- [x] Admin -> di server nginx
+     - [ ] PHPMyAdmin
+     - [ ] RedisAdmin
+     - [ ] NginxVTS
+- [x] Nginx
+     - [x] Security (docker,upload)
+     - [x] Optimasi performace
+     - [x] Redis cache
+- [x] Implement dev
+- [x] Implement prod

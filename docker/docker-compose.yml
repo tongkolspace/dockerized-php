@@ -1,0 +1,140 @@
+version: '3.8'
+services:
+  reverse-proxy:
+    image: traefik:latest
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--accesslog=true"
+      # - "--accesslog.filePath=/logs/access.log"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/logs:/logs/
+    networks:
+      - external
+    restart: unless-stopped
+  php-fpm:
+    # Bisa diganti wordpress:6.4.1-php8.2
+    # sesuaikan php ini
+    image: easyengine/php8.1:v4.6.7
+    environment:
+      WORDPRESS_DB_HOST: "${DB_HOST}"
+      WORDPRESS_DB_NAME: "${DB_NAME}"
+      WORDPRESS_DB_USER: "${DB_USER}"
+      WORDPRESS_DB_PASSWORD: "${DB_PASSWORD}"
+      WORDPRESS_DEBUG: "${WP_DEBUG}"
+      TZ: ${TZ}
+    volumes:
+      - ../${APP_TYPE}:/var/www/html/
+      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+    networks:
+      - external
+      - internal
+  nginx:
+    image: tongkolspace/nginx-ee
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ../${APP_TYPE}:/var/www/html
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
+      - ./nginx/log:/var/log/nginx
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/common-extra:/etc/nginx/common-extra
+      - ./nginx/conf.d-extra:/etc/nginx/conf.d-extra
+    depends_on:
+      - php-fpm
+      - redis
+    networks:
+      - external
+      - internal
+    environment:
+      TZ: ${TZ}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.${APP_NAME}.entrypoints=web"
+      - "traefik.docker.network=external"
+  redis:
+    image: redis:latest
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    environment:
+      TZ: ${TZ}
+    networks:
+      - internal
+  workspace:
+    image: tongkolspace/workspace
+    build:
+      context: ./workspace
+      dockerfile: Dockerfile
+    volumes:
+      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+      - ../${APP_TYPE}:/var/www/html
+      - ./cron/cronjob-${APP_TYPE}:/tmp/cronjob
+      - ./supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
+      - ./supervisor.conf/${APP_TYPE}.conf:/etc/supervisor/conf.d/${APP_TYPE}.conf
+    environment:
+      WORDPRESS_DB_HOST: "${DB_HOST}"
+      WORDPRESS_DB_NAME: "${DB_NAME}"
+      WORDPRESS_DB_USER: "${DB_USER}"
+      WORDPRESS_DB_PASSWORD: "${DB_PASSWORD}"
+      WORDPRESS_DEBUG: "${WP_DEBUG}"
+      TZ: "${TZ}"
+    networks:
+      - internal
+      - external
+  db:
+      restart: unless-stopped
+      container_name: db-${APP_NAME}
+      image: mysql:5.7
+      # ports:
+        # Uncomment jika tidak ingin ekpsose
+        # - "3306:3306"
+      environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${DB_NAME}       
+        MYSQL_USER: "${DB_USER}"               
+        MYSQL_PASSWORD: "${DB_PASSWORD}"       
+        TZ: ${TZ}
+      volumes:
+        - ./mysql/config:/etc/mysql/conf.d
+        - ./mysql/datadir:/var/lib/mysql
+      networks:
+        - external
+  pma:
+      restart: unless-stopped
+      # Akses dengan http://domain/pma/ (wajib dengan slash)
+      image: phpmyadmin/phpmyadmin
+      environment:
+        # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
+        PMA_HOST: db
+        PMA_PORT: 3306
+        MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+        UPLOAD_LIMIT: 50M
+        PMA_ABSOLUTE_URI: "http://${DOMAIN}/pma"
+      links:
+        - db:db
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${APP_NAME}-pma.rule=Host(`${DOMAIN}`) && PathPrefix(`/pma`)"
+      - "traefik.http.routers.${APP_NAME}-pma.entrypoints=web"
+      - "traefik.http.routers.${APP_NAME}-pma.middlewares=${APP_NAME}-pma-auth,${APP_NAME}-pma-path"
+      - "traefik.http.middlewares.${APP_NAME}-pma-auth.basicauth.users=${HTPASSWD}"
+      - "traefik.http.middlewares.${APP_NAME}-pma-path.stripprefix.prefixes=/pma"
+      - "traefik.docker.network=external"
+      networks:
+        - external
+networks:
+  external:
+    external: true
+    name: ${NETWORK}
+  internal:

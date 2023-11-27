@@ -1,0 +1,5 @@
+docker/mysql/datadir/*
+docker/nginx/log/*
+docker/.env
+docker/dev.env
+docker/prod.env
