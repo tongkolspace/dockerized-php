@@ -4,3 +4,4 @@ docker/.env
 docker/dev.env
 docker/prod.env
 *.log
+*.sql

@@ -17,9 +17,9 @@ Merupakah docker stack `production ready` untuk aplikasi PHP
 git clone
 cd docker
 cp .env-sample .env
-docker-compose up 
+docker compose up --force-recreate 
 # atau jika hanya butuh web service saja
-docker-compose up nginx workspace
+docker compose up nginx workspace
 ```
 
 Tambahan domain dalam file `.env` ke hostfile
@@ -34,13 +34,13 @@ sudo chown $(whoami):www-data . -R
 
 **Prod / Stagging**
 
-Untuk menjalankan docker compose pada environment dev harap mengcopy docker-compose.yml dan .env-sample
+Untuk menjalankan docker compose pada environment dev harap mengcopy docker compose.yml dan .env-sample
 
 ```
 cd docker
-cp docker-compose.yml docker-compose-dev.yml
+cp docker compose.yml docker compose-dev.yml
 cp .env-sample dev.env
-docker-compose -f docker-compose-dev.yml --env-file dev.env up 
+docker compose -f docker compose-dev.yml --env-file dev.env up 
 ```
 
 Gunakan `php-fpm/php-prod.ini` pada aplikasi produksi
@@ -97,7 +97,7 @@ wp core udate
 Akses MySQL
 
 ```
-docker-compose exec db bash
+docker compose exec db bash
 mysql -u root -p$MYSQL_ROOT_PASSWORD
 ```
 
@@ -135,7 +135,7 @@ Untuk mengatur exclude cache buka halaman berikut pada WordPress `wp-admin/optio
 
 Ganti `APP_TYPE=laravel` pada `docker/.env`
 
-Update environment container `php-fpm` dan `workspace` pada `docker/docker-compose.yml` agar env terbaca pada laravel
+Update environment container `php-fpm` dan `workspace` pada `docker/docker compose.yml` agar env terbaca pada laravel
 
 ```
 DB_HOST: "${DB_HOST}"
@@ -262,14 +262,14 @@ Untuk mempermudah development dapat menggunakan `./wrapper.sh`
 ```
 ./wrapper.sh help
 Usage : ./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]
-Usage : ./wrapper.sh  [up|down|logs|restart|permission|exec]
+Usage : ./wrapper.sh  [permission] [folder]
 
 # Sample Command
-## Menjalakan docker-compose.yml
+## Menjalakan docker compose.yml
 ./wrapper.sh up 
 ./wrapper.sh up php-fpm nginx redis
 
-## Menjalakan docker-compose-dev.yml
+## Menjalakan docker compose-dev.yml
 ./wrapper.sh dev up 
 ./wrapper.sh restart
 ```

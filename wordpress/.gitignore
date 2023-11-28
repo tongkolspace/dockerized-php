@@ -12,6 +12,3 @@ wp-content/wflogs/
 /readme.html
 /sitemap.xml
 /sitemap.xml.gz
-
-docker/.env
-docker/data/
