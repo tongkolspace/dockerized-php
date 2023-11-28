@@ -43,7 +43,7 @@ cp .env-sample dev.env
 docker-compose -f docker-compose-dev.yml --env-file dev.env up 
 ```
 
-Gunakan php-fpm/php-prod.ini pada aplikasi produksi
+Gunakan `php-fpm/php-prod.ini` pada aplikasi produksi
 
 **Sesuaikan permission**
 ```
