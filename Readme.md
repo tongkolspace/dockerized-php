@@ -255,6 +255,25 @@ define( 'API_KEY', getenv_docker('API_KEY', 'key') );
 
 Pada contoh diatas `API_ENV` dan `API_KEY` perlu dimasukkan kedalam file `.env` pada folder `docker`
 
+# Wrapper Script
+
+Untuk mempermudah development dapat menggunakan `./wrapper.sh`
+
+```
+./wrapper.sh help
+Usage : ./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]
+Usage : ./wrapper.sh  [up|down|logs|restart|permission|exec]
+
+# Sample Command
+## Menjalakan docker-compose.yml
+./wrapper.sh up 
+./wrapper.sh up php-fpm nginx redis
+
+## Menjalakan docker-compose-dev.yml
+./wrapper.sh dev up 
+./wrapper.sh restart
+```
+
 
 # Todo 
 - [x] Supervisor
@@ -264,8 +283,10 @@ Pada contoh diatas `API_ENV` dan `API_KEY` perlu dimasukkan kedalam file `.env` 
      - [ ] PHPMyAdmin
      - [ ] RedisAdmin
      - [ ] NginxVTS
+- [ ] Deploy Script
+     - [ ] WordPress
 - [x] Nginx
-     - [x] Security (docker,upload)
+     - [x] Security (docker,upload)ls
      - [x] Optimasi performace
      - [x] Redis cache
 - [x] Implement dev
