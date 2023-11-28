@@ -78,19 +78,28 @@ Supervisor dan cron harus berjalan dengan user `www-data`
 
 ## Eksekusi Command Container
 
-Gunakan container `workspace` untuk menjalankan perintah `wp` atau `npm`. Perintah harus dijalankan sebagai `www-data` dengan cara menggunakan wrapper `exec-www`
+Gunakan container `workspace` untuk menjalankan perintah `wp` atau `npm`. 
+Pada dev / prod perintah harus dijalankan sebagai `www-data` dengan cara menggunakan wrapper `exec-www` atau masuk sebagai www-data
 
 ```bash
+# Contoh 1
 docker compose exec workspace bash
 exec-www wp core udate
+
+# Contoh 2
+docker compose exec -u www-data workspace bash 
+wp core udate
 ```
 
 **MySQL**
+
 Akses MySQL
+
 ```
 docker-compose exec db bash
 mysql -u root -p$MYSQL_ROOT_PASSWORD
 ```
+
 
 Untuk melakukan import data mysql 
 
@@ -119,6 +128,52 @@ include common-extra/php-fpm-redis-cache.conf;
 Secara default user tidak login akan tercache. 
 Jika halaman tidak ingin dicache bisa mengirimkan header `no-cache` 
 Untuk mengatur exclude cache buka halaman berikut pada WordPress `wp-admin/options-general.php?page=exclude-cache`
+
+
+# Instalasi laravel
+
+Ganti `APP_TYPE=laravel` pada `docker/.env`
+
+Update environment container `php-fpm` dan `workspace` pada `docker/docker-compose.yml` agar env terbaca pada laravel
+
+```
+DB_HOST: "${DB_HOST}"
+DB_DATABASE: "${DB_NAME}"
+DB_USERNAME: "${DB_USER}"
+DB_PASSWORD: "${DB_PASSWORD}"
+APP_DEBUG: "${DEBUG}"
+```
+
+Masuk ke workspace sebagai user workspace (uid=1000) untuk melakukan instalasi atau copy dari project existing
+
+```bash
+cd docker
+docker compose exec -u workspace workspace bash 
+cd /var/www/html
+composer create-project --prefer-dist laravel/laravel .
+```
+
+Ganti `laravel/.env` pada laravel
+
+```
+DB_CONNECTION=mysql
+DB_HOST=DB_HOST
+DB_PORT=3306
+DB_DATABASE=DB_NAME
+DB_USERNAME=DB_USER
+DB_PASSWORD=DB_PASSWORD
+```
+
+keluar dari docker workspace ganti ownership file
+
+```
+cd /laravel
+sudo find . -type f -exec chmod 664 {} \;
+sudo find . -type d -exec chmod 775 {} \;
+sudo chown $(whoami):www-data . -R
+```
+
+Jalankan composer install dan perintah lainya yang diperlukan kemudian buka aplikasi di : http://domain
 
 # Ownership
 

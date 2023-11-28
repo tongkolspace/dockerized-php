@@ -21,11 +21,9 @@ RUN set -ex; \
         cron \
         supervisor \
     &&  rm -rf /etc/cron.*/* \
-    # && ln -fs /usr/share/zoneinfo/Asia/Bangkok /etc/localtime \
-    # && dpkg-reconfigure -f noninteractive tzdata \
-    ############
-    # Node & NPM
-    ############
+    # # #####################################
+    # # # Node & NPM
+    # # #####################################
     && mkdir -p /etc/apt/keyrings \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key |  gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
     && NODE_MAJOR=20 \
@@ -33,14 +31,17 @@ RUN set -ex; \
     && apt-get update \
     && apt-get install nodejs -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    ######################
-    # Add exec-www wrapper
-    ######################
-    && echo "" >> /root/.bashrc \
+    # # #####################################
+    # # # Add exec-www wrapper
+    # # #####################################
     && echo "exec-www() {" >> /root/.bashrc  \
     && echo "    su -s /bin/sh www-data -c \"\$*\"" >> /root/.bashrc  \
-    && echo "}" >> /root/.bashrc
-    
+    && echo "}" >> /root/.bashrc \
+    ######################################
+    # Add user workspace and asign id=1000
+    ######################################
+    && useradd -u 1000 -g www-data -G www-data workspace
+
 COPY entrypoint.sh /entrypoint.sh
 
 WORKDIR  /var/www/html
