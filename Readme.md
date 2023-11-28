@@ -46,6 +46,7 @@ docker-compose -f docker-compose-dev.yml --env-file dev.env up
 Gunakan `php-fpm/php-prod.ini` pada aplikasi produksi
 
 **Sesuaikan permission**
+
 ```
 cd /folder-project/
 sudo find . -type f -exec chmod 644 {} \;
@@ -116,9 +117,9 @@ sesuaikan php ini sesuai kebutuhan pada php-fpm/php-(dev|prod).ini
 Sesuaikan upstream service docker php fpm dan redis pada `nginx/conf.d-extra` jika dibutuhkan. Pastikan berjalan dengan user www-data
 
 
-### WordPress Cache
+# WordPress Cache
 
-Untuk menggunakan cache ganti php-fpm pada `nginx/sites-enabled/default.conf`
+Untuk menggunakan cache WordPress ganti php-fpm pada `nginx/sites-enabled/default.conf`
 
 ```
 #include common-extra/php-fpm.conf;
@@ -183,11 +184,13 @@ Untuk melihat UID dan GUID dapat dicek dengan perintah `id`
 
 ```bash
 $ id
-uid=1000(kasatka) gid=1000(kasatka) groups=1000(kasatka),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),116(netdev),119(libvirt),999(docker)
+uid=1000(kasatka) gid=1000(kasatka) groups=1000(kasatka)
+
 ```
-User kasatka memiliki uid 1000 yang merupakan uid pertama non root dalam sistem linux. Jika  kita melakukan mount folder `/var/www/html` maka pada docker container maka akan terdeteksi UID file dan folder adalah 1000. User kasatka tidak terbaca karena user tersebut tidak dalam container linux maka dari itu ownershipnya menggunakan uid
+User kasatka memiliki uid 1000 yang merupakan uid pertama non root dalam sistem linux. Jika  kita melakukan mount folder `/var/www/html` maka pada docker container dengan user kasatka maka akan terdeteksi UID file dan folder adalah 1000, hal ini dikarenakan user kasatka tidak terbaca dalam container linux maka dari itu ownershipnya menggunakan uid = 1000
 
 ```bash
+docker compose exec nginx bash
 # ls -lsa
 total 424508
      4 drwxrwxr-x 170     1000 www-data      4096 Nov 22 18:40  .
