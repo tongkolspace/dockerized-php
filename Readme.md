@@ -88,7 +88,7 @@ docker compose exec workspace bash
 exec-www wp core udate
 
 # Contoh 2
-docker compose exec -u www-data workspace bash 
+./wrapper.sh  exec -u www-data workspace bash 
 wp core udate
 ```
 
@@ -105,7 +105,8 @@ mysql -u root -p$MYSQL_ROOT_PASSWORD
 Untuk melakukan import data mysql 
 
 ```
-docker compose exec db mysql -u $USER -p$PASSWORD DB_NAME < file.sql
+docker compose exec -T db mysql -u $USER -p$PASSWORD DB_NAME < file.sql
+./wrapper.sh exec -T db mysql -u $USER -p$PASSWORD DB_NAME < file.sql
 ```
 
 ## Konfigurasi php.ini

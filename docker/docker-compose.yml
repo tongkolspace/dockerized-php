@@ -2,6 +2,8 @@ version: '3.8'
 services:
   reverse-proxy:
     image: traefik:latest
+    container_name: reverse-proxy-${APP_NAME}
+    restart: unless-stopped
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -19,11 +21,12 @@ services:
       - ./traefik/logs:/logs/
     networks:
       - external
-    restart: unless-stopped
   php-fpm:
     # Bisa diganti wordpress:6.4.1-php8.2
     # sesuaikan php ini
     image: easyengine/php8.1:v4.6.7
+    container_name: php-fpm-${APP_NAME}
+    restart: unless-stopped
     environment:
       WORDPRESS_DB_HOST: "${DB_HOST}"
       WORDPRESS_DB_NAME: "${DB_NAME}"
@@ -44,10 +47,11 @@ services:
       - internal
   nginx:
     image: tongkolspace/nginx-ee
+    container_name: nginx-${APP_NAME}
+    restart: unless-stopped
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    restart: unless-stopped
     volumes:
       - ../${APP_TYPE}:/var/www/html
       - ./nginx/sites-enabled/${APP_TYPE}.conf:/etc/nginx/sites-enabled/default
@@ -70,6 +74,8 @@ services:
       - "traefik.docker.network=${NETWORK}"
   redis:
     image: redis:latest
+    container_name: redis-${APP_NAME}
+    restart: unless-stopped
     volumes:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
@@ -79,6 +85,7 @@ services:
       - internal
   workspace:
     image: tongkolspace/workspace
+    container_name: workspace-${APP_NAME}
     build:
       context: ./workspace
       dockerfile: Dockerfile
@@ -104,9 +111,9 @@ services:
       - internal
       - external
   db:
-      restart: unless-stopped
-      container_name: db-${APP_NAME}
       image: mysql:5.7
+      container_name: db-${APP_NAME}
+      restart: unless-stopped
       # ports:
         # Uncomment jika tidak ingin ekpsose
         # - "3306:3306"
@@ -122,9 +129,10 @@ services:
       networks:
         - external
   pma:
-      restart: unless-stopped
       # Akses dengan http://domain/pma/ (wajib dengan slash)
       image: phpmyadmin/phpmyadmin
+      container_name: pma-${APP_NAME}
+      restart: unless-stopped
       environment:
         # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
         PMA_HOST: db
