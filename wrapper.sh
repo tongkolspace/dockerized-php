@@ -2,6 +2,9 @@
 
 function help_wrapper {
     echo "Usage : ./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]"
+    echo "Usage : ./wrapper.sh  ?[dev|prod] [mysql-console]"
+    echo "Usage : ./wrapper.sh  ?[dev|prod] [mysql-dump]"
+    echo "Usage : ./wrapper.sh  ?[dev|prod] [mysql-import] [db-name] [import-file]"
     echo "Usage : ./wrapper.sh  permission directory"
     exit 1
 }
@@ -15,7 +18,13 @@ function load_env {
     fi
 }
 
+# Check if argument is given
+if [ $# -eq 0 ]; then
+    help_wrapper
+    exit 1
+fi
 
+# Setup path
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 current_dir=$(pwd)
 
@@ -41,7 +50,6 @@ then
 fi
 
 # Set Env for docker compose
-
 if [ "$1" == "dev" ] || [ "$1" == "prod" ]
 then
     load_env "$script_dir/docker/$1.env"
@@ -51,8 +59,6 @@ else
     load_env "$script_dir/docker/.env"
     compose_file="-f docker-compose.yml --env-file=.env -p $APP_NAME"
 fi
-
-
 
 echo "Running with configuration : $compose_file"
 
@@ -78,6 +84,35 @@ elif [ "$1" == "log" ]
 then
     cd "$script_dir/docker"
     docker compose $compose_file logs -t -f --tail 100
+    cd $current_dir
+elif [ "$1" == "mysql-console" ]
+then
+    cd "$script_dir/docker"
+    docker compose $compose_file exec db mysql -u root -p$MYSQL_ROOT_PASSWORD
+    cd $current_dir
+elif [ "$1" == "mysql-dump" ]
+then
+
+    if [ "$2" == "" ]; then
+        $2 = $DB_NAME
+    fi
+
+    cd "$script_dir/docker"
+    echo "Dumping database $2 into $2.sql"
+    docker compose $compose_file exec -T db mysqldump -u root -p$MYSQL_ROOT_PASSWORD $2 > ../$2.sql
+    cd $current_dir
+elif [ "$1" == "mysql-import" ]
+then
+
+    # Check if argument is given
+    if [ $# -ne 3 ]; then
+        help_wrapper
+        exit 1
+    fi
+
+    echo "import database to $2 from $3"
+    cd "$script_dir/docker"
+    docker compose $compose_file exec -T db mysql -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
     cd $current_dir
 elif [ "$1" == "exec" ]
 then

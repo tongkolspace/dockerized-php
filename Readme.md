@@ -16,13 +16,13 @@ Merupakah docker stack `production ready` untuk aplikasi PHP
 ```
 git clone
 cd docker
+# Tambahan domain dalam file `.env` ke hostfile
 cp .env-sample .env
-docker compose up --force-recreate 
+docker compose -p nama-app up --force-recreate 
 # atau jika hanya butuh web service saja
 docker compose up nginx workspace
 ```
 
-Tambahan domain dalam file `.env` ke hostfile
 
 **Sesuaikan permission**
 ```
@@ -40,7 +40,7 @@ Untuk menjalankan docker compose pada environment dev harap mengcopy docker comp
 cd docker
 cp docker compose.yml docker compose-dev.yml
 cp .env-sample dev.env
-docker compose -f docker compose-dev.yml --env-file dev.env up 
+docker compose -f docker compose-dev.yml --env-file dev.env -p nama-app up 
 ```
 
 Gunakan `php-fpm/php-prod.ini` pada aplikasi produksi
@@ -55,6 +55,39 @@ sudo find wp-content -type f -exec chmod 775 {} \;
 sudo chmod 775 wp-config.php
 sudo chown www-data:www-data . -R
 ```
+
+## Wrapper.sh
+
+
+Untuk mempermudah development dapat menggunakan `./wrapper.sh`
+
+```
+./wrapper.sh help
+Usage : ./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]
+Usage : ./wrapper.sh  [permission] [folder]
+
+# docker-compose up
+./wrapper.sh up 
+./wrapper.sh up php-fpm nginx redis
+
+# masuk ke container db
+./wrapper.sh exec db bash
+
+# masuk ke console mysql
+./wrapper.sh exec mysql-console
+
+# dump db
+./wrapper.sh exec mysql-dump [nama-db]
+
+# import
+./wrapper.sh exec mysql-import [nama-db] [nama-import-file]
+
+## Menjalakan docker compose-dev.yml
+./wrapper.sh dev up 
+./wrapper.sh restart
+```
+
+
 
 # Services
 
@@ -256,24 +289,6 @@ define( 'API_KEY', getenv_docker('API_KEY', 'key') );
 
 Pada contoh diatas `API_ENV` dan `API_KEY` perlu dimasukkan kedalam file `.env` pada folder `docker`
 
-# Wrapper Script
-
-Untuk mempermudah development dapat menggunakan `./wrapper.sh`
-
-```
-./wrapper.sh help
-Usage : ./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]
-Usage : ./wrapper.sh  [permission] [folder]
-
-# Sample Command
-## Menjalakan docker compose.yml
-./wrapper.sh up 
-./wrapper.sh up php-fpm nginx redis
-
-## Menjalakan docker compose-dev.yml
-./wrapper.sh dev up 
-./wrapper.sh restart
-```
 
 
 # Todo 
