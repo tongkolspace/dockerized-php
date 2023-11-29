@@ -6,6 +6,15 @@ function help_wrapper {
     exit 1
 }
 
+function load_env {
+    # Source the .env file
+    if [ -f $1 ]; then
+        export $(grep -v '^#' $1 | xargs)
+    else
+        echo "No .env file found in $1"
+    fi
+}
+
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 current_dir=$(pwd)
@@ -31,14 +40,19 @@ then
     exit
 fi
 
+# Set Env for docker compose
 
 if [ "$1" == "dev" ] || [ "$1" == "prod" ]
 then
-    compose_file="-f docker-compose-$1.yml --env-file=$1.env"
+    load_env "$script_dir/docker/$1.env"
+    compose_file="-f docker-compose-$1.yml --env-file=$1.env -p $APP_NAME"
     shift 1    
 else   
-    compose_file="-f docker-compose.yml --env-file=.env"
+    load_env "$script_dir/docker/.env"
+    compose_file="-f docker-compose.yml --env-file=.env -p $APP_NAME"
 fi
+
+
 
 echo "Running with configuration : $compose_file"
 
