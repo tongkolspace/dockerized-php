@@ -34,9 +34,11 @@ RUN set -ex; \
     # # #####################################
     # # # Add exec-www wrapper
     # # #####################################
+    && echo "" >> /root/.bashrc  \
     && echo "exec-www() {" >> /root/.bashrc  \
     && echo "    su -s /bin/sh www-data -c \"\$*\"" >> /root/.bashrc  \
     && echo "}" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc  \
     ######################################
     # Add user workspace and asign id=1000
     ######################################

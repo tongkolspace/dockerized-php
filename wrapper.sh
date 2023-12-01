@@ -1,11 +1,11 @@
 #!/bin/bash
 
 function help_wrapper {
-    echo "Usage : ./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]"
-    echo "Usage : ./wrapper.sh  ?[dev|prod] [mysql-console]"
-    echo "Usage : ./wrapper.sh  ?[dev|prod] [mysql-dump]"
-    echo "Usage : ./wrapper.sh  ?[dev|prod] [mysql-import] [db-name] [import-file]"
-    echo "Usage : ./wrapper.sh  permission directory"
+    echo "./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]"
+    echo "./wrapper.sh  ?[dev|prod] [mysql-console]"
+    echo "./wrapper.sh  ?[dev|prod] [mysql-dump]"
+    echo "./wrapper.sh  ?[dev|prod] [mysql-import] [db-name] [import-file]"
+    echo "./wrapper.sh  [permission] [directory]"
     exit 1
 }
 

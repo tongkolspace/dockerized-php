@@ -27,6 +27,8 @@ services:
     image: easyengine/php8.1:v4.6.7
     container_name: php-fpm-${APP_NAME}
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       WORDPRESS_DB_HOST: "${DB_HOST}"
       WORDPRESS_DB_NAME: "${DB_NAME}"
@@ -95,6 +97,8 @@ services:
       - ./cron/cronjob-${APP_TYPE}:/tmp/cronjob
       - ./supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
       - ./supervisor.conf/${APP_TYPE}.conf:/etc/supervisor/conf.d/${APP_TYPE}.conf
+    env_file:
+      - .env
     environment:
       WORDPRESS_DB_HOST: "${DB_HOST}"
       WORDPRESS_DB_NAME: "${DB_NAME}"

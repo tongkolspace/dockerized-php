@@ -62,9 +62,11 @@ sudo chown www-data:www-data . -R
 Untuk mempermudah development dapat menggunakan `./wrapper.sh`
 
 ```
-./wrapper.sh help
-Usage : ./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]
-Usage : ./wrapper.sh  [permission] [folder]
+./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]
+./wrapper.sh  ?[dev|prod] [mysql-console]
+./wrapper.sh  ?[dev|prod] [mysql-dump]
+./wrapper.sh  ?[dev|prod] [mysql-import] [db-name] [import-file]
+./wrapper.sh  [permission] [directory]
 
 # docker-compose up
 ./wrapper.sh up 
