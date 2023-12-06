@@ -19,6 +19,8 @@ cd docker
 # Tambahan domain dalam file `.env` ke hostfile
 cp .env-sample .env
 docker compose -p nama-app up --force-recreate 
+# atau
+./wrapper.sh up 
 # atau jika hanya butuh web service saja
 docker compose up nginx workspace
 ```
@@ -32,31 +34,41 @@ sudo find . -type d -exec chmod 775 {} \;
 sudo chown $(whoami):www-data . -R
 ```
 
-**Prod / Stagging**
+# Environment
 
-Untuk menjalankan docker compose pada environment dev harap mengcopy docker compose.yml dan .env-sample
+| Environment  | Deskripsi | Command Wrapper |
+|------------|---------|-----------|
+| local | Developer mengembangkan aplikasi pada environment ini | `./wrapper.sh up`
+| dev | Server pengembangan yang memiliki environment mirip production | `./wrapper.sh dev up`
+| prod | Server production | `./wrapper.sh prod up`
+
+## Dev / Prod
+
+Untuk menjalankan docker compose pada environment `dev` atau `prod` harap mengcopy : 
+
+- `docker-compose.yml` -> `docker-compose-{env}.yml` 
+- `.env-sample` -> `{env}.env`
+
+Misal untuk environment `dev`
 
 ```
 cd docker
 cp docker compose.yml docker compose-dev.yml
 cp .env-sample dev.env
-docker compose -f docker compose-dev.yml --env-file dev.env -p nama-app up 
+docker compose -f docker compose-dev.yml --env-file dev.env -p nama-app up
+
+# Sesuaikan permission di folder wordpress / laravel
+cd /{app-type}/
+sudo find . -type f -exec chmod 664 {} \;
+sudo find . -type d -exec chmod 775 {} \;
+sudo chown $(whoami):www-data . -R
+./wrapper.sh dev up  
 ```
 
-Gunakan `php-fpm/php-prod.ini` pada aplikasi produksi
+Pada file `docker-compose-{env}.yml` sesuaikan konfigurasi dengan file template misalnya gunakan `php-fpm/php-prod.ini` pada aplikasi produksi
 
-**Sesuaikan permission**
 
-```
-cd /folder-project/
-sudo find . -type f -exec chmod 644 {} \;
-sudo find . -type d -exec chmod 755 {} \;
-sudo find wp-content -type f -exec chmod 775 {} \;
-sudo chmod 775 wp-config.php
-sudo chown www-data:www-data . -R
-```
-
-## Wrapper.sh
+# Wrapper.sh
 
 
 Untuk mempermudah development dapat menggunakan `./wrapper.sh`
@@ -73,15 +85,22 @@ Untuk mempermudah development dapat menggunakan `./wrapper.sh`
 ./wrapper.sh up php-fpm nginx redis
 
 # masuk ke container db
+# docker compose $compose_file exec "$@"
 ./wrapper.sh exec db bash
 
+# masuk ke container workspace
+./wrapper.sh exec --user=www-data workspace bash
+
 # masuk ke console mysql
+# docker compose $compose_file exec db mysql -u root -p$MYSQL_ROOT_PASSWORD
 ./wrapper.sh exec mysql-console
 
-# dump db
-./wrapper.sh exec mysql-dump [nama-db]
+# dump db 
+# docker compose $compose_file exec -T db mysqldump -u root -p$MYSQL_ROOT_PASSWORD $2 > ../$2.sql
+./wrapper.sh exec mysql-dump [nama-db] 
 
 # import
+# docker compose $compose_file exec -T db mysql -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
 ./wrapper.sh exec mysql-import [nama-db] [nama-import-file]
 
 ## Menjalakan docker compose-dev.yml
@@ -169,16 +188,17 @@ Untuk mengatur exclude cache buka halaman berikut pada WordPress `wp-admin/optio
 
 # Instalasi laravel
 
-Ganti `APP_TYPE=laravel` pada `docker/.env`
+copy file `.env-sample-laravel` ke `.env`
 
-Update environment container `php-fpm` dan `workspace` pada `docker/docker compose.yml` agar env terbaca pada laravel
+Update environment container `db` pada `docker/docker-compose.yml` agar env terbaca pada laravel
 
 ```
-DB_HOST: "${DB_HOST}"
-DB_DATABASE: "${DB_NAME}"
-DB_USERNAME: "${DB_USER}"
-DB_PASSWORD: "${DB_PASSWORD}"
-APP_DEBUG: "${DEBUG}"
+  db:
+      environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${DB_NAME}       
+        MYSQL_USER: "${DB_USER}"               
+        MYSQL_PASSWORD: "${DB_PASSWORD}"       
 ```
 
 Masuk ke workspace sebagai user workspace (uid=1000) untuk melakukan instalasi atau copy dari project existing
@@ -190,15 +210,15 @@ cd /var/www/html
 composer create-project --prefer-dist laravel/laravel .
 ```
 
-Ganti `laravel/.env` pada laravel
+Hapus konfigurasi `laravel/.env` : 
 
 ```
 DB_CONNECTION=mysql
-DB_HOST=DB_HOST
+DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=DB_NAME
-DB_USERNAME=DB_USER
-DB_PASSWORD=DB_PASSWORD
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
 keluar dari docker workspace ganti ownership file
@@ -210,11 +230,11 @@ sudo find . -type d -exec chmod 775 {} \;
 sudo chown $(whoami):www-data . -R
 ```
 
-Jalankan composer install dan perintah lainya yang diperlukan kemudian buka aplikasi di : http://domain
+Buka aplikasi http://domain
 
 # Ownership
 
-Ownership file pada dokcer  perlu  diperhatikan dengan seksama. Volume yang di-mount pada docker container akan memiliki GUID dan UID yang sama dengan GUID dan UID pada host machine
+Ownership file pada docker  perlu  diperhatikan dengan seksama. Volume yang di-mount pada docker container akan memiliki GUID dan UID yang sama dengan GUID dan UID pada host machine
 
 Untuk melihat UID dan GUID dapat dicek dengan perintah `id`
 

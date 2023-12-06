@@ -80,7 +80,7 @@ then
     shift 1
     docker compose $compose_file up "$@" --force-recreate -d
     cd $current_dir
-elif [ "$1" == "log" ]
+elif [ "$1" == "logs" ]
 then
     cd "$script_dir/docker"
     docker compose $compose_file logs -t -f --tail 100

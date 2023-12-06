@@ -132,7 +132,7 @@ services:
       - "traefik.http.routers.${APP_NAME}-pma.entrypoints=web"
       - "traefik.http.routers.${APP_NAME}-pma.middlewares=${APP_NAME}-pma-auth,${APP_NAME}-pma-path"
       # echo $(htpasswd -nb demo-app KU8UqEuqtdSCEL) | sed -e s/\\$/\\$\\$/g
-      - "traefik.http.middlewares.${APP_NAME}-pma-auth.basicauth.users=demo-app:$$apr1$$dnI1wC0T$$y5/3VpywkUkI27ayt6FTZ."
+      - "traefik.http.middlewares.${APP_NAME}-pma-auth.basicauth.users=demo-app:$apr1$3QEdp1CP$ZhNgOm.xQ3zcey/gmKbiS1"
       - "traefik.http.middlewares.${APP_NAME}-pma-path.stripprefix.prefixes=/pma"
       - "traefik.docker.network=${NETWORK}"
       networks:
