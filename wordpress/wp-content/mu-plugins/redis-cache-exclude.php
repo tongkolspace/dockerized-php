@@ -147,7 +147,9 @@ class Exclude_cache
             }
         }
 
-        nocache_headers();
+        if($status){
+            nocache_headers();
+        }
     }
 
     /**
