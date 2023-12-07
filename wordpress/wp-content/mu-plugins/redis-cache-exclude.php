@@ -45,6 +45,7 @@ class Exclude_cache
         add_action( 'admin_menu', array($this, 'exclude_cache_menu'), 100 );
         add_action('admin_enqueue_scripts',array($this, 'codemirror_enqueue_scripts') );
         add_action( 'send_headers', array( $this, 'check_no_cache_url' ) );
+        add_action('admin_footer', array($this,'ec_custom_css'));
     }
 
     /**
@@ -259,6 +260,26 @@ class Exclude_cache
         $url .= $_SERVER['REQUEST_URI'];
 
         return $url;
+    }
+
+    /**
+     * custom css
+     */
+    public function ec_custom_css(){
+        $currentScreen = get_current_screen();
+            if( $currentScreen->id == "settings_page_exclude-cache" ){
+        ?>
+         <style type="text/css">
+            .exclude-cache .wrapper-content{
+                width: 50%;
+                background: #fff;
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+        </style>
+        <?php
+            }
     }
 
 }
