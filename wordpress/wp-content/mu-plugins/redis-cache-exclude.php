@@ -147,25 +147,27 @@ class Exclude_cache
             }
         }
 
-        if($status){
-            nocache_headers();
-        }
+        // if($status){
+        //     nocache_headers();
+        // }
+
+        $this->setup_header_control($status);
     }
 
     /**
      * setup header control
      */
-    // public function setup_header_control($status)
-    // {
+    public function setup_header_control($status)
+    {
 
-    //     if($status===true) {
-    //         header("Expires: 0");
-    //         header("Cache-Control: no-cache, must-revalidate, max-age=0");
+        if($status===true) {
+            header("Expires: 0");
+            header("Cache-Control: no-cache, must-revalidate, max-age=0");
 
-    //     }
+        }
 
-    //     return; 
-    // }
+        return; 
+    }
 
     /**
      * register menu 
