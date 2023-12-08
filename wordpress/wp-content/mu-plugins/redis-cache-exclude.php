@@ -45,6 +45,7 @@ class Exclude_cache
         add_action( 'admin_menu', array($this, 'exclude_cache_menu'), 100 );
         add_action('admin_enqueue_scripts',array($this, 'codemirror_enqueue_scripts') );
         add_action( 'send_headers', array( $this, 'check_no_cache_url' ) );
+        add_action('admin_footer', array($this,'ec_custom_css'));
     }
 
     /**
@@ -92,6 +93,9 @@ class Exclude_cache
             $status = true;
         }
 
+        if ( in_array(  $wp->request  , $white_list_regex ) ) {
+            $status = true;
+        }
 
         $current_url = str_replace( site_url() . '/', '', $this->ec_get_current_url() );
 
@@ -146,23 +150,27 @@ class Exclude_cache
             }
         }
 
-        nocache_headers();
+        // if($status){
+        //     nocache_headers();
+        // }
+
+        $this->setup_header_control($status);
     }
 
     /**
      * setup header control
      */
-    // public function setup_header_control($status)
-    // {
+    public function setup_header_control($status)
+    {
 
-    //     if($status===true) {
-    //         header("Expires: 0");
-    //         header("Cache-Control: no-cache, must-revalidate, max-age=0");
+        if($status===true) {
+            header("Expires: 0");
+            header("Cache-Control: no-cache, must-revalidate, max-age=0");
 
-    //     }
+        }
 
-    //     return; 
-    // }
+        return; 
+    }
 
     /**
      * register menu 
@@ -191,55 +199,61 @@ class Exclude_cache
     /**
      * exclude cachec callback
      */
-    public function exclude_cache_callback(){
-    ?>
-        <div class="wrap">
-            <h1 class="wp-heading-inline"><?php _e( 'URL to Exclude Cache', 'tongkolspace' ); ?></h1>
-            <p>Enter url or param to exclude</p>
-            <p>?no_cache</p>
-            <p>/export-data</p>
-            <p>/export-data*</p>
+    public function exclude_cache_callback()
+    {
+?>
+        <div class="wrap exclude-cache">
+            <h1 class="wp-heading-inline"><?php _e('URL to Exclude Page Cache', 'tongkolspace'); ?></h1>
+
             <hr class="wp-header-end">
-                <?php 
-                    if ( isset($_POST['submit']) ) {
-                    
-                        if( ! isset($_POST['exclude-cache']) || ! wp_verify_nonce($_POST['secure'], 'exclude-cache') ){
+            <?php
+            if (isset($_POST['submit'])) {
 
-                            echo "<h2> Wrong connection </h2>";
-                            return;
-                        }
+                if (!isset($_POST['exclude-cache']) || !wp_verify_nonce($_POST['secure'], 'exclude-cache')) {
 
-                        $data_url = $_POST['exclude-cache'];
+                    echo "<h2> Wrong connection </h2>";
+                    return;
+                }
 
-                        update_option( 'exclude_cache_custom', $data_url, 'no' );
+                $data_url = $_POST['exclude-cache'];
 
-                    }
-                ?>
-
+                update_option('exclude_cache_custom', $data_url, 'no');
+            }
+            ?>
+            <div class="wrapper-content">
+                <h2><?php echo __('Masukkan Url Page Untuk Exclude Cache','tongkolspace'); ?></h2>
+                <hr>
                 <form method="post" action="">
-                <?php wp_nonce_field( 'exclude-cache', 'secure' ); ?>
-                <?php $get_urls= get_option( 'exclude_cache_custom' ); ?>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row"><?php _e( '', 'tongkolspace' ); ?></th>
-                        <td>
-                            <textarea id="exclude-cache" name="exclude-cache" ><?php echo $get_urls; ?></textarea>
-                        </td>
-                    </tr>
-        
-                </table>
+                    <?php wp_nonce_field('exclude-cache', 'secure'); ?>
+                    <?php $get_urls = get_option('exclude_cache_custom'); ?>
+                    <table class="form-table">
+                        <tr valign="top">
+                            <td>
+                                <textarea id="exclude-cache" name="exclude-cache"><?php echo $get_urls; ?></textarea>
+                            </td>
+                        </tr>
 
-                <script type="text/javascript">
-                    jQuery(document).ready(function($) {
-                      wp.codeEditor.initialize($('#exclude-cache'), cm_settings);
-                    })
-               </script>
-                <?php submit_button(); ?>
+                    </table>
 
-              </form>
-            
+                    <script type="text/javascript">
+                        jQuery(document).ready(function($) {
+                            wp.codeEditor.initialize($('#exclude-cache'), cm_settings);
+                        })
+                    </script>
+                    <?php submit_button(); ?>
+
+                </form>
+            </div>
         </div>
-    <?php 
+        <style type="text/css">
+            .exclude-cache .wrapper-content {
+                width: 50%;
+                background: #fff;
+                padding: 10px;
+                border-radius: 8px;
+            }
+        </style>
+        <?php
     }
 
 
@@ -259,6 +273,26 @@ class Exclude_cache
         $url .= $_SERVER['REQUEST_URI'];
 
         return $url;
+    }
+
+    /**
+     * custom css
+     */
+    public function ec_custom_css(){
+        $currentScreen = get_current_screen();
+            if( $currentScreen->id == "settings_page_exclude-cache" ){
+        ?>
+         <style type="text/css">
+            .exclude-cache .wrapper-content{
+                width: 50%;
+                background: #fff;
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+        </style>
+        <?php
+            }
     }
 
 }
