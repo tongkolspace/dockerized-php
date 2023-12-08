@@ -93,6 +93,9 @@ class Exclude_cache
             $status = true;
         }
 
+        if ( in_array(  $wp->request  , $white_list_regex ) ) {
+            $status = true;
+        }
 
         $current_url = str_replace( site_url() . '/', '', $this->ec_get_current_url() );
 
