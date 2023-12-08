@@ -19,10 +19,10 @@ function load_env {
 }
 
 # Check if argument is given
-if [ $# -eq 0 ]; then
-    help_wrapper
-    exit 1
-fi
+# if [ $# -eq 0 ]; then
+#     help_wrapper
+#     exit 1
+# fi
 
 # Setup path
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -62,25 +62,35 @@ fi
 
 echo "Running with configuration : $compose_file"
 
-if [ "$1" == "down" ]
-then
-    cd "$script_dir/docker"
-    shift 1
-    docker compose $compose_file down "$@"
-    cd $current_dir
-elif [ "$1" == "restart" ]
-then
-    cd "$script_dir/docker"
-    shift 1
-    docker compose $compose_file restart "$@"
-    cd $current_dir
-elif [ "$1" == "up" ]
+# if [  $# -eq 0 ]
+# then
+#     cd "$script_dir/docker"
+#     docker compose $compose_file "$@"
+#     cd $current_dir
+# if [ "$1" == "down" ]
+# then
+#     cd "$script_dir/docker"
+#     shift 1
+#     docker compose $compose_file down "$@"
+#     cd $current_dir
+# elif [ "$1" == "restart" ]
+# then
+#     cd "$script_dir/docker"
+#     shift 1
+#     docker compose $compose_file restart "$@"
+#     cd $current_dir
+if [ "$1" == "up" ]
 then
     cd "$script_dir/docker"
     shift 1
     docker compose $compose_file up "$@" --force-recreate -d
     cd $current_dir
-elif [ "$1" == "logs" ]
+# elif [ "$1" == "logs" ]
+# then
+#     cd "$script_dir/docker"
+#     docker compose $compose_file logs "$@"
+#     cd $current_dir
+elif [ "$1" == "log-tail" ]
 then
     cd "$script_dir/docker"
     docker compose $compose_file logs -t -f --tail 100
@@ -121,6 +131,8 @@ then
     docker compose $compose_file exec "$@"
     cd $current_dir    
 else 
-    help_wrapper
+    cd "$script_dir/docker"
+    docker compose $compose_file "$@"
+    cd $current_dir
 fi
 

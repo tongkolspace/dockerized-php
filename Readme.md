@@ -329,3 +329,5 @@ Pada contoh diatas `API_ENV` dan `API_KEY` perlu dimasukkan kedalam file `.env` 
      - [x] Redis cache
 - [x] Implement dev
 - [x] Implement prod
+- [ ] Wrapper
+	- export 1 command tanpa param

@@ -45,6 +45,7 @@ RUN set -ex; \
     && useradd -u 1000 -g www-data -G www-data workspace
 
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod 755 /entrypoint.sh
 
 WORKDIR  /var/www/html
 
