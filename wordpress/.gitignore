@@ -6,6 +6,7 @@ wp-content/log/
 wp-content/upgrade/
 wp-content/uploads/
 wp-content/wflogs/
+.maintenance
 
 /.htaccess
 /license.txt

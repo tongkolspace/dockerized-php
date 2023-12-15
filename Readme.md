@@ -313,21 +313,4 @@ Pada contoh diatas `API_ENV` dan `API_KEY` perlu dimasukkan kedalam file `.env` 
 
 
 
-# Todo 
-- [x] Supervisor
-- [x] Redis
-- [x] Cron
-- [x] Admin -> di server nginx
-     - [ ] PHPMyAdmin
-     - [ ] RedisAdmin
-     - [ ] NginxVTS
-- [ ] Deploy Script
-     - [ ] WordPress
-- [x] Nginx
-     - [x] Security (docker,upload)ls
-     - [x] Optimasi performace
-     - [x] Redis cache
-- [x] Implement dev
-- [x] Implement prod
-- [ ] Wrapper
-	- export 1 command tanpa param
+

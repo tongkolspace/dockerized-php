@@ -50,6 +50,7 @@ then
 fi
 
 # Set Env for docker compose
+## Add new environment here if needed
 if [ "$1" == "dev" ] || [ "$1" == "prod" ]
 then
     load_env "$script_dir/docker/$1.env"
@@ -104,12 +105,17 @@ elif [ "$1" == "mysql-dump" ]
 then
 
     if [ "$2" == "" ]; then
-        $2 = $DB_NAME
+
+        EXPORT_DB_NAME=${DB_NAME:-$WORDPRESS_DB_NAME}
+
+        if [ -z "$EXPORT_DB_NAME" ]; then
+            echo "Please specify db name"
+        fi
     fi
 
     cd "$script_dir/docker"
-    echo "Dumping database $2 into $2.sql"
-    docker compose $compose_file exec -T db mysqldump -u root -p$MYSQL_ROOT_PASSWORD $2 > ../$2.sql
+    echo "Dumping database $EXPORT_DB_NAME into $script_dir/../$EXPORT_DB_NAME.sql"
+    docker-compose $compose_file exec -T db mysqldump -u root -p$MYSQL_ROOT_PASSWORD $EXPORT_DB_NAME > ../$EXPORT_DB_NAME$(date +%Y%m%d%H%M%S).sql
     cd $current_dir
 elif [ "$1" == "mysql-import" ]
 then
@@ -120,8 +126,8 @@ then
         exit 1
     fi
 
-    echo "import database to $2 from $3"
     cd "$script_dir/docker"
+    echo "import database to $2 from $script_dir/../$3"
     docker compose $compose_file exec -T db mysql -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
     cd $current_dir
 elif [ "$1" == "exec" ]

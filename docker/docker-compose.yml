@@ -112,6 +112,7 @@ services:
         - ./mysql/datadir:/var/lib/mysql
       networks:
         - external
+        - internal
   pma:
       # Akses dengan http://domain/pma/ (wajib dengan slash)
       image: phpmyadmin/phpmyadmin
@@ -137,6 +138,7 @@ services:
       - "traefik.docker.network=${NETWORK}"
       networks:
         - external
+        - internal
 networks:
   external:
     external: true
