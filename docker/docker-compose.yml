@@ -34,6 +34,7 @@ services:
     volumes:
       - ../${APP_TYPE}:/var/www/html/
       - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+      - ./php-fpm/php-fpm-dev.conf:/usr/local/etc/php-fpm/easyengine.conf
     networks:
       - external
       - internal
