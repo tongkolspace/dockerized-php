@@ -10,7 +10,7 @@ LABEL org.label-schema.name="nginx-ee"
 # Install wget and curl (necessary for the script)
 RUN apt-get update && apt-get install -y wget curl  software-properties-common iputils-ping wget nano\
     && add-apt-repository ppa:wordops/nginx-wo -uy \
-    && apt install nginx-custom nginx-wo -y \
+    && apt install nginx-custom nginx-wo nano iputils-ping traceroute -y \
     # Run the Nginx installation script
     # Note: This script should be carefully reviewed before execution
     # to ensure it meets your security and configuration requirements.
