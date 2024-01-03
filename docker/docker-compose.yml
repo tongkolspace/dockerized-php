@@ -48,6 +48,7 @@ services:
     volumes:
       - ../${APP_TYPE}:/var/www/html
       - ./nginx/sites-enabled/${APP_TYPE}.conf:/etc/nginx/sites-enabled/default
+      - ./nginx/sites-enabled/admin.conf:/etc/nginx/sites-enabled/admin.conf
       - ./nginx/log:/var/log/nginx
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/common-extra:/etc/nginx/common-extra
