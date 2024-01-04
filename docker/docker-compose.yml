@@ -151,7 +151,7 @@ services:
     networks:
       - internal
   redis-commander:
-    container_name: redis-commander
+    container_name: redis-commander-${APP_NAME}
     hostname: redis-commander
     image: ghcr.io/joeferner/redis-commander:latest
     restart: unless-stopped
