@@ -7,6 +7,7 @@ Merupakah docker stack `production ready` untuk aplikasi PHP
 | reverse-proxy | reverse proxy | [traefik](https://hub.docker.com/_/traefik)  |
 | php | php-fpm 8.1 | [EasyEngine php-fpm](https://hub.docker.com/r/easyengine/php/) / wordpress:6.4.1-php8.1  |
 | nginx | nginx | [Nginx EE](https://hub.docker.com/r/tongkolspace/nginx-ee)  |
+|       | Admin | PHPMyAdmin, Nginx Vts, etc  |
 | redis | redis | [redis](https://hub.docker.com/_/redis)  |
 | workspace | Cron & Supervisor | [workspace](https://hub.docker.com/r/tongkolspace/workspace) |
 
@@ -15,13 +16,14 @@ Merupakah docker stack `production ready` untuk aplikasi PHP
 ```
 git clone
 cd docker
-# Tambahan domain dalam file `.env` ke hostfile
+# Tambahan `$domain` dalam file `.env` ke hostfile
+## Web hanya bisa diakses melalui `$domain`
 cp .env-sample .env
-docker compose -p nama-app up --force-recreate 
+# Ganti password akses dashboard
+htpasswd -c docker/nginx/.htpasswd traefik
+cd docker && docker compose -p nama-app up --force-recreate 
 # atau
 ./wrapper.sh up 
-# atau jika hanya butuh web service saja
-docker compose up nginx workspace
 ```
 
 **Sesuaikan permission**
@@ -106,8 +108,8 @@ Untuk mempermudah development dapat menggunakan `./wrapper.sh`
 
 ## Web App
 
-- Aplikasi PHP http://domain
-- PHPMyAdmin http://domain/pma/ 
+- Aplikasi PHP http://`$domain`
+- Admin Panel http://`$domain`:57710/ 
 
 ## Background Job
 
@@ -218,9 +220,8 @@ Gunakan permission group write agar baik developer (UID=1000) dan user www-data 
 
 ```bash
 cd /folder-project/
-sudo find . -type f -exec chmod 664 {} \;
-sudo find . -type d -exec chmod 775 {} \;
-sudo chown $(whoami):www-data . -R
+sudo find . -path './wp-content/uploads' -prune -o -type f -exec bash -c 'chown $(whoami):www-data {} && chmod 664 {}' \;
+sudo find . -path './wp-content/uploads' -prune -o -type d -exec bash -c 'chown $(whoami):www-data {} && chmod 775 {}' \;
 ```
 
 Perubahan ownership folder dan file akan merubah git, maka dari itu cukup lakukan 1x saja agar tidak memenuhi commit pada repository git.
@@ -322,5 +323,5 @@ sudo find . -type d -exec chmod 775 {} \;
 sudo chown $(whoami):www-data . -R
 ```
 
-Buka aplikasi http://domain
+Buka aplikasi http://`$domain`
 

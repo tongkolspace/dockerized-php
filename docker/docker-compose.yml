@@ -1,21 +1,32 @@
 version: '3.8'
 services:
-  reverse-proxy:
+  traefik:
     image: traefik:latest
     container_name: reverse-proxy-${APP_NAME}
     restart: unless-stopped
     command:
-      - "--api.insecure=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.admin.address=:57710"
+      - "--entrypoints.traefik-dashboard.address=:57711"
       - "--accesslog=true"
       - "--accesslog.filePath=/logs/access.log"
       - "--providers.docker.network=overlay-network-internal"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${DOMAIN}`,`traefik`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=traefik-dashboard"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      # - "traefik.http.routers.traefik-dashboard.middlewares=authtraefik"
+      # #   # login : traefik pass  : 123456
+      # #   # echo $(htpasswd -nb traefik 123456) | sed -e s/\\$/\\$\\$/g
+      # - "traefik.http.middlewares.authtraefik.basicauth.users=traefik:$$apr1$$ueAplono$$ghIXqkQi5w75.PigwVXMy/"
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
+      - "57710:57710"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik/logs:/logs/
@@ -34,7 +45,7 @@ services:
     volumes:
       - ../${APP_TYPE}:/var/www/html/
       - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ./php-fpm/php-fpm-dev.conf:/usr/local/etc/php-fpm/easyengine.conf
+      - ./php-fpm/php-fpm-dev.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
     networks:
       - external
       - internal
@@ -47,12 +58,14 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ../${APP_TYPE}:/var/www/html
+      - ../admin:/var/www/admin
       - ./nginx/sites-enabled/${APP_TYPE}.conf:/etc/nginx/sites-enabled/default
       - ./nginx/sites-enabled/admin.conf:/etc/nginx/sites-enabled/admin.conf
       - ./nginx/log:/var/log/nginx
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/common-extra:/etc/nginx/common-extra
       - ./nginx/conf.d-extra:/etc/nginx/conf.d-extra
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
     depends_on:
       - php-fpm
       - redis
@@ -65,6 +78,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.${APP_NAME}.entrypoints=web"
+      - "traefik.http.routers.${APP_NAME}.service=${APP_NAME}"
+      - "traefik.http.routers.${APP_NAME}-admin.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.${APP_NAME}-admin.entrypoints=admin"
+      - "traefik.http.routers.${APP_NAME}-admin.service=${APP_NAME}-admin"
+      - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=80"
+      - "traefik.http.services.${APP_NAME}-admin.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
   redis:
     image: redis:latest
@@ -97,50 +116,49 @@ services:
       - internal
       - external
   db:
-      image: mysql:5.7
-      container_name: db-${APP_NAME}
-      restart: unless-stopped
-      # ports:
-        # Uncomment jika tidak ingin ekpsose
-        # - "3306:3306"
-      environment:
-        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-        MYSQL_DATABASE: ${WORDPRESS_DB_NAME}       
-        MYSQL_USER: "${WORDPRESS_DB_USER}"               
-        MYSQL_PASSWORD: "${WORDPRESS_DB_PASSWORD}"       
-        TZ: ${TZ}
-      volumes:
-        - ./mysql/config:/etc/mysql/conf.d
-        - ./mysql/datadir:/var/lib/mysql
-      networks:
-        - external
-        - internal
+    image: mysql:5.7
+    container_name: db-${APP_NAME}
+    restart: unless-stopped
+    # ports:
+    # Uncomment jika tidak ingin ekpsose
+    # - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: "${WORDPRESS_DB_USER}"
+      MYSQL_PASSWORD: "${WORDPRESS_DB_PASSWORD}"
+      TZ: ${TZ}
+    volumes:
+      - ./mysql/config:/etc/mysql/conf.d
+      - ./mysql/datadir:/var/lib/mysql
+    networks:
+      - external
+      - internal
   pma:
-      # Akses dengan http://domain/pma/ (wajib dengan slash)
-      image: phpmyadmin/phpmyadmin
-      container_name: pma-${APP_NAME}
-      restart: unless-stopped
-      environment:
-        # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
-        PMA_HOST: db
-        PMA_PORT: 3306
-        MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-        UPLOAD_LIMIT: 50M
-        PMA_ABSOLUTE_URI: "http://${DOMAIN}/pma"
-      links:
-        - db:db
-      labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.${APP_NAME}-pma.rule=Host(`${DOMAIN}`) && PathPrefix(`/pma`)"
-      - "traefik.http.routers.${APP_NAME}-pma.entrypoints=web"
-      - "traefik.http.routers.${APP_NAME}-pma.middlewares=${APP_NAME}-pma-auth,${APP_NAME}-pma-path"
-      # echo $(htpasswd -nb demo-app KU8UqEuqtdSCEL) | sed -e s/\\$/\\$\\$/g
-      - "traefik.http.middlewares.${APP_NAME}-pma-auth.basicauth.users=demo-app:$$apr1$$dnI1wC0T$$y5/3VpywkUkI27ayt6FTZ."
-      - "traefik.http.middlewares.${APP_NAME}-pma-path.stripprefix.prefixes=/pma"
-      - "traefik.docker.network=${NETWORK}"
-      networks:
-        - external
-        - internal
+    # Akses dengan http://domain/pma/ (wajib dengan slash)
+    image: phpmyadmin/phpmyadmin
+    container_name: pma-${APP_NAME}
+    restart: unless-stopped
+    environment:
+      # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      UPLOAD_LIMIT: 50M
+      PMA_ABSOLUTE_URI: "http://${DOMAIN}/pma/"
+    links:
+      - db:db
+    networks:
+      - internal
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: ghcr.io/joeferner/redis-commander:latest
+    restart: unless-stopped
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    networks:
+      - internal
 networks:
   external:
     external: true

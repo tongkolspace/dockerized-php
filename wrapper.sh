@@ -36,7 +36,7 @@ then
         cd "$2"
         sudo find . -type f -exec chmod 664 {} \;
         sudo find . -type d -exec chmod 775 {} \;
-        sudo chown -R www-data:www-data .
+        sudo chown $(whoami):www-data . -R
         cd $current_dir
         exit
     else
@@ -74,13 +74,13 @@ echo "Running with configuration : $compose_file"
 #     shift 1
 #     docker compose $compose_file down "$@"
 #     cd $current_dir
-# elif [ "$1" == "restart" ]
-# then
-#     cd "$script_dir/docker"
-#     shift 1
-#     docker compose $compose_file restart "$@"
-#     cd $current_dir
-if [ "$1" == "up" ]
+if [ "$1" == "restart-service" ]
+then
+    cd "$script_dir/docker"
+    shift 1
+    docker compose $compose_file stop "$@" && docker compose $compose_file rm -f "$@" && docker compose $compose_file up "$@" -d
+    cd $current_dir
+elif [ "$1" == "up" ]
 then
     cd "$script_dir/docker"
     shift 1
@@ -141,4 +141,3 @@ else
     docker compose $compose_file "$@"
     cd $current_dir
 fi
-
