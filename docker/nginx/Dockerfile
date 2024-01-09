@@ -8,12 +8,16 @@ LABEL org.label-schema.name="nginx-ee"
 
 
 # Install wget and curl (necessary for the script)
-RUN apt-get update && apt-get install -y wget curl  software-properties-common iputils-ping wget traceroute nano\
-    # Run the Nginx installation script
-    # Note: This script should be carefully reviewed before execution
-    # to ensure it meets your security and configuration requirements.
-   && bash -c "bash <(wget -qO - vtb.cx/nginx-ee || curl -sL vtb.cx/nginx-ee)" \
-   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+RUN apt-get update && apt-get install -y wget curl software-properties-common unzip iputils-ping wget nano\
+    && add-apt-repository ppa:wordops/nginx-wo -uy && apt-get update \
+    && apt install nginx-custom nginx-wo -y \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+
+RUN  wget https://github.com/VirtuBox/nginx-config/archive/refs/heads/master.zip -P /tmp \
+    && unzip /tmp/master.zip -d /tmp \
+    && mv /tmp/nginx-config-master/common /etc/nginx/ \
+    && cp -r /tmp/nginx-config-master/conf.d/* /etc/nginx/conf.d \
+    && rm -rf /tmp/*
 
 # Expose ports 80 and 443 for HTTP and HTTPS traffic
 EXPOSE 80 443
