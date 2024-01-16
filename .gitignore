@@ -5,3 +5,4 @@ docker/dev.env
 docker/prod.env
 *.log
 *.sql
+.htpasswd
