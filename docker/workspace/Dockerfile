@@ -42,7 +42,11 @@ RUN set -ex; \
     ######################################
     # Add user workspace and asign id=1000
     ######################################
-    && useradd -u 1000 -g www-data -G www-data workspace
+    && useradd -u 1000 -g www-data -G www-data workspace \
+    && groupadd workspace -g 1000  \
+    && usermod -a -G workspace workspace \
+    && mkdir /home/workspace  \
+    && chown workspace:workspace /home/workspace
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 755 /entrypoint.sh
