@@ -5,29 +5,24 @@ services:
     container_name: reverse-proxy-${APP_NAME}
     restart: unless-stopped
     command:
-      - "--api.dashboard=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.admin.address=:57710"
-      - "--entrypoints.traefik-dashboard.address=:57711"
-      - "--accesslog=true"
-      - "--accesslog.filePath=/logs/access.log"
-      - "--providers.docker.network=overlay-network-internal"
+      - "--configFile=/etc/traefik/traefik.yml"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik-dashboard.rule=Host(`${DOMAIN}`,`traefik`)"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.traefik-dashboard.entrypoints=traefik-dashboard"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
-      # - "traefik.http.routers.traefik-dashboard.middlewares=authtraefik"
-      # #   # login : traefik pass  : 123456
-      # #   # echo $(htpasswd -nb traefik 123456) | sed -e s/\\$/\\$\\$/g
-      # - "traefik.http.middlewares.authtraefik.basicauth.users=traefik:$$apr1$$ueAplono$$ghIXqkQi5w75.PigwVXMy/"
+      # global redirect to https
+      # - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      # - "traefik.http.routers.http-catchall.entrypoints=web"
+      # - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # # middleware redirect
+      # - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
     ports:
       - "80:80"
       - "443:443"
       - "57710:57710"
     volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik/logs:/logs/
     networks:
@@ -76,13 +71,15 @@ services:
       TZ: ${TZ}
     labels:
       - "traefik.enable=true"
+      # - "traefik.http.routers.${APP_NAME}.tls=true"
+      # - "traefik.http.routers.${APP_NAME}.tls.certresolver=letsencrypt"
       - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.${APP_NAME}.entrypoints=web"
       - "traefik.http.routers.${APP_NAME}.service=${APP_NAME}"
+      - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=80"
       - "traefik.http.routers.${APP_NAME}-admin.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.${APP_NAME}-admin.entrypoints=admin"
       - "traefik.http.routers.${APP_NAME}-admin.service=${APP_NAME}-admin"
-      - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=80"
       - "traefik.http.services.${APP_NAME}-admin.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
   redis:
