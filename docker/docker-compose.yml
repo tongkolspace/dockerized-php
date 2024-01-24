@@ -45,7 +45,7 @@ services:
       - external
       - internal
   nginx:
-    image: tongkolspace/nginx-ee
+    image: tongkolspace/nginx-ee:v1.0.0
     container_name: nginx-${APP_NAME}
     restart: unless-stopped
     build:
@@ -95,7 +95,7 @@ services:
     networks:
       - internal
   workspace:
-    image: tongkolspace/workspace
+    image: tongkolspace/workspace:8.1-v1.0.0
     container_name: workspace-${APP_NAME}
     build:
       context: ./workspace

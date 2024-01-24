@@ -2,7 +2,6 @@
 FROM ubuntu:22.04
 
 LABEL maintainer="Todi Adiyatmo <todiadiyatmo@gmail.com>"
-LABEL org.label-schema.schema-version="1.0.0"
 LABEL org.label-schema.vendor="Tongkolspace"
 LABEL org.label-schema.name="nginx-ee"
 

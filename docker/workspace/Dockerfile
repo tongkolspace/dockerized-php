@@ -1,7 +1,6 @@
-FROM easyengine/php8.1:v4.6.7
+FROM easyengine/php8.2:v4.6.7
 
 LABEL maintainer="Todi Adiyatmo <todiadiyatmo@gmail.com>"
-LABEL org.label-schema.schema-version="1.0.0"
 LABEL org.label-schema.vendor="Tongkolspace"
 LABEL org.label-schema.name="workspace"
 
