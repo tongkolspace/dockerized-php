@@ -24,6 +24,9 @@ htpasswd -c docker/nginx/.htpasswd traefik
 cd docker && docker compose -p nama-app up --force-recreate 
 # atau
 ./wrapper.sh up 
+
+# masuk ke dalam container workspace untuk menggunakan wp-cli dengan user uid 1000
+./wrapper workspace
 ```
 
 **Sesuaikan permission**
@@ -110,6 +113,7 @@ Untuk mempermudah development dapat menggunakan `./wrapper.sh`
 
 - Aplikasi PHP http://`$domain`
 - Admin Panel http://`$domain`:57710/ 
+  - Gunakan user dan password pada htpsswd yang sudah dibuat
 
 ## Background Job
 
@@ -282,15 +286,15 @@ Secara default user tidak login akan tercache.
 
 ### Instalasi
 
-copy file `.env-sample-laravel` ke `.env`
+copy file `docker/.env-sample-laravel` ke `.env`
 Update environment container `db` pada `docker/docker-compose.yml` agar env terbaca pada laravel
 
 ```
   db:
       environment:
         MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-        MYSQL_DATABASE: ${DB_NAME}       
-        MYSQL_USER: "${DB_USER}"               
+        MYSQL_DATABASE: ${DB_DATABASE}       
+        MYSQL_USER: "${DB_USERNAME}"               
         MYSQL_PASSWORD: "${DB_PASSWORD}"       
 ```
 
@@ -303,15 +307,15 @@ cd /var/www/html
 composer create-project --prefer-dist laravel/laravel .
 ```
 
-Hapus konfigurasi `laravel/.env` : 
+Ganti konfigurasi `laravel/.env`, comment bagian `DB_DATABASE`, `DB_PORT`, `DB_USERNAME`, dan `DB_PASSWORD` karena diambil langsung dari env docker
 
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=laravel
-DB_USERNAME=root
-DB_PASSWORD=
+#DB_PORT=3306
+#DB_DATABASE=laravel
+#DB_USERNAME=root
+#DB_PASSWORD=
 ```
 
 keluar dari docker workspace ganti ownership file

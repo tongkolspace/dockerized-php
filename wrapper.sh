@@ -1,11 +1,13 @@
 #!/bin/bash
 
 function help_wrapper {
-    echo "./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]"
-    echo "./wrapper.sh  ?[dev|prod] [mysql-console]"
-    echo "./wrapper.sh  ?[dev|prod] [mysql-dump]"
-    echo "./wrapper.sh  ?[dev|prod] [mysql-import] [db-name] [import-file]"
+    echo "./wrapper.sh  ?[dev|prod|staging|pre-prod] [up|down|logs|restart|exec]"
+    echo "./wrapper.sh  ?[dev|prod|staging|pre-prod] [workspace]"
+    echo "./wrapper.sh  ?[dev|prod|staging|pre-prod] [mysql-console]"
+    echo "./wrapper.sh  ?[dev|prod|staging|pre-prod] [mysql-dump]"
+    echo "./wrapper.sh  ?[dev|prod|staging|pre-prod] [mysql-import] [db-name] [import-file]"
     echo "./wrapper.sh  [permission] [directory]"
+    echo "./wrapper.sh  [help]"
     exit 1
 }
 
@@ -51,7 +53,7 @@ fi
 
 # Set Env for docker compose
 ## Add new environment here if needed
-if [ "$1" == "dev" ] || [ "$1" == "prod" ]
+if [ "$1" == "dev" ] || [ "$1" == "prod" ] || [ "$1" == "staging" ] || [ "$1" == "pre-prod" ]
 then
     load_env "$script_dir/docker/$1.env"
     compose_file="-f docker-compose-$1.yml --env-file=$1.env -p $APP_NAME"
@@ -135,6 +137,12 @@ then
     cd "$script_dir/docker"
     shift 1
     docker compose $compose_file exec "$@"
+    cd $current_dir    
+elif [ "$1" == "workspace" ]
+then
+    cd "$script_dir/docker"
+    shift 1
+    docker compose $compose_file exec --user=workspace workspace bash
     cd $current_dir    
 else 
     cd "$script_dir/docker"
