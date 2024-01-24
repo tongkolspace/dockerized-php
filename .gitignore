@@ -1,8 +1,12 @@
-docker/mysql/datadir/*
-docker/nginx/log/*
-docker/.env
-docker/dev.env
-docker/prod.env
-*.log
-*.sql
-.htpasswd
+# IDE Files
+#-------------------------
+/nbproject/
+.idea/*
+
+## Sublime Text cache files
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
