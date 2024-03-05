@@ -97,7 +97,7 @@ services:
     volumes:
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
       - ../wordpress:/var/www/html
-      - ./supervisor/cron/cronjob-laravel:/tmp/cronjob
+      - ./supervisor/cron/cronjob-wordpress:/tmp/cronjob
       - ./supervisor/supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
       - ./supervisor/supervisor.conf/wordpress.conf:/etc/supervisor/conf.d/wordpress.conf
     env_file:
