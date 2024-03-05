@@ -1,111 +1,81 @@
-# Lest Fast
+# Cara Cepat
 
-add host
+Tambahkan host berikut
 ```
-host 
 127.0.0.1 wordpress.local proxy.dev.local
 ```
 
-git clone git@git.tonjoo.com:tonjoo/dockerized-wordpress.git dockerized-wordpress && cd dockerized-wordpress && rm .git -rf
+Menjalankan `env` development
+```
+git clone git@github.com:tongkolspace/dockerized-php.git dockerized-php && cd dockerized-php && rm .git -rf
 git init
 
 bash init.sh wordpress
+
+# Ganti password pada file .env
+nano docker/.env
+
 bash wrapper.sh up
 ```
 
+| Sevice  | URL |
+|------------|---------|
+| WordPress | http://wordpress.local |
+| Admin | http://wordpress.local:57710 |
+
+Menjalankan `env` production
+
+```
+bash wrapper.sh down
+
+# Ganti password pada file .env-dev-local dan .env-dev-proxy
+nano docker/.env-dev-local
+nano docker/.env-dev-proxy
+
+bash wrapper.sh dev-local dev-proxy up
+```
+| Sevice  | URL |
+|------------|---------|
+| WordPress | https://wordpress.local |
+| Admin | https://wordpress.local:57710 |
+| Admin Traefik | https://proxy.dev.local:57710 |
 
 # PHP Docker Stack
 
 Merupakah docker stack `production ready` untuk aplikasi PHP 
 
-| Container  | Service | Deskripsi |
-|------------|---------|-----------|
-| reverse-proxy | reverse proxy | [traefik](https://hub.docker.com/_/traefik)  |
-| php | php-fpm 8.1 | [EasyEngine php-fpm](https://hub.docker.com/r/easyengine/php/) / wordpress:6.4.1-php8.1  |
-| nginx | nginx | [Nginx EE](https://hub.docker.com/r/tongkolspace/nginx-ee)  |
-|       | Admin | PHPMyAdmin, Nginx Vts, etc  |
-| redis | redis | [redis](https://hub.docker.com/_/redis)  |
-| workspace | Cron & Supervisor | [workspace](https://hub.docker.com/r/tongkolspace/workspace) |
+| Service  | Stack | Folder  | URL Domain |  Deskripsi |
+|------------|---------|-----------|-----------|-----------|
+| Admin Panel | nginx | `admin`| wordpress.local:57710 |  Admin tools (phpmyadmin etc)  |
+|   | nginx,traefik | `admin` | proxy.dev.local:57710 |  Traefik Dashboard  |
+| CMS | WordPress| `wordpress` | wordpress.local |  WordPress  |
 
-# Penjelasan Ringkas
 
-```
-git clone
-cd docker
-# Tambahan `$domain` dalam file `.env` ke hostfile
-## Web hanya bisa diakses melalui `$domain`
-cp .env-sample .env
-# Ganti password akses dashboard
-htpasswd -c docker/nginx/.htpasswd traefik
-cd docker && docker compose -p nama-app up --force-recreate 
-# atau
-./wrapper.sh up 
-
-# masuk ke dalam container workspace untuk menggunakan wp-cli dengan user uid 1000
-./wrapper workspace
-```
-
-**Sesuaikan permission**
-
-```
-cd /wordpress/
-sudo find . -type f -exec chmod 664 {} \;
-sudo find . -type d -exec chmod 775 {} \;
-sudo chown $(whoami):www-data . -R
-```
-
-# Environment
-
-| Environment  | Deskripsi | Command Wrapper |
-|------------|---------|-----------|
-| local | Developer mengembangkan aplikasi pada environment ini | `./wrapper.sh up`
-| dev | Server pengembangan yang memiliki environment mirip production | `./wrapper.sh dev up`
-| prod | Server production | `./wrapper.sh prod up`
-
-## Dev / Prod
-
-Untuk menjalankan docker compose pada environment `dev` atau `prod` harap mengcopy : 
-- `docker-compose.yml` -> `docker-compose-{env}.yml` 
-- `.env-sample` -> `{env}.env`
-Misal untuk environment `dev`
-
-```
-cd docker
-cp docker compose.yml docker compose-dev.yml
-cp .env-sample dev.env
-docker compose -f docker compose-dev.yml --env-file dev.env -p nama-app up
-
-# Sesuaikan permission di folder wordpress / laravel
-cd /{app-type}/
-sudo find . -type f -exec chmod 664 {} \;
-sudo find . -type d -exec chmod 775 {} \;
-sudo chown $(whoami):www-data . -R
-./wrapper.sh dev up  
-```
-
-Pada file `docker-compose-{env}.yml` sesuaikan konfigurasi dengan file template misalnya gunakan `php-fpm/php-prod.ini` pada aplikasi produksi
 
 # Wrapper.sh
 
 Untuk mempermudah development dapat menggunakan `./wrapper.sh`
 
 ```
-./wrapper.sh  ?[dev|prod] [up|down|logs|restart|exec]
-./wrapper.sh  ?[dev|prod] [mysql-console]
-./wrapper.sh  ?[dev|prod] [mysql-dump]
-./wrapper.sh  ?[dev|prod] [mysql-import] [db-name] [import-file]
+./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [up|down|logs|restart|exec]
+./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-console]
+./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-dump]
+./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-import] [db-name] [import-file]
 ./wrapper.sh  [permission] [directory]
 
 # docker-compose up
 ./wrapper.sh up 
 ./wrapper.sh up php-fpm nginx redis
 
+
+# Menjalankan beberapa environment
+./wrapper.sh dev-local dev-proxy up 
+
 # masuk ke container db
-# docker compose $compose_file exec "$@"
 ./wrapper.sh exec db bash
 
-# masuk ke container workspace
-./wrapper.sh exec --user=www-data workspace bash
+# Menjalankan container workspace
+./wrapper.sh run --user=www-data workspace bash
 
 # masuk ke console mysql
 # docker compose $compose_file exec db mysql -u root -p$MYSQL_ROOT_PASSWORD
@@ -119,16 +89,35 @@ Untuk mempermudah development dapat menggunakan `./wrapper.sh`
 # docker compose $compose_file exec -T db mysql -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
 ./wrapper.sh exec mysql-import [nama-db] [nama-import-file]
 
-## Menjalakan docker compose-dev.yml
-./wrapper.sh dev up 
-./wrapper.sh restart
 ```
+
+
+# Environment
+
+| Environment  | docker-compose | Penjelasan |
+|------------|---------|-----------|
+| dev local | docker-compose.yml | Tempat developer mengembangkan aplikasi menggunakan config mysql dan php development | 
+| dev local | docker-compose-dev-local.yml | Environment development dengan traefik + nginx. Aplikasi dijalankan dengan config php dan mysql production | 
+|                    | docker-compose-dev-proxy.yml | Reverse proxy untuk WordPress | 
+| production | docker-compose-prod-app.yml | Environment production | 
+
+
+Untuk membuat environment baru perlu dibuat 2 file yaitu file `docker-compose-{nama-env}` dan `.env-{nama-env}`
+
+Misal kita ingin membuat environment `prod-aws` maka perlu dibuat
+
+- `docker-compose-prod-aws`
+- `.env-prod-aws`
+
+Jalankan dengan `wrapper.sh prod-aws up`
+
+
 # Services
 
 ## Web App
 
-- Aplikasi PHP http://`$domain`
-- Admin Panel http://`$domain`:57710/ 
+- Aplikasi WordPress http://wordpress.local`
+- Admin Panel http://wordpress.local:57710/ 
   - Gunakan user dan password pada htpsswd yang sudah dibuat
 
 ## Background Job
@@ -297,51 +286,4 @@ include common-extra/php-fpm-redis-cache.conf;
 Jika halaman tidak ingin dicache bisa mengirimkan header `no-cache` hal ini bisa diatur dari halaman berikut pada WordPress `wp-admin/options-general.php?page=exclude-cache`
 
 Secara default user tidak login akan tercache. 
-
-## Laravel
-
-### Instalasi
-
-copy file `docker/.env-sample-laravel` ke `.env`
-Update environment container `db` pada `docker/docker-compose.yml` agar env terbaca pada laravel
-
-```
-  db:
-      environment:
-        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-        MYSQL_DATABASE: ${DB_DATABASE}       
-        MYSQL_USER: "${DB_USERNAME}"               
-        MYSQL_PASSWORD: "${DB_PASSWORD}"       
-```
-
-Masuk ke workspace sebagai user workspace (uid=1000) untuk melakukan instalasi atau copy dari project existing
-
-```bash
-cd docker
-docker compose exec -u workspace workspace bash 
-cd /var/www/html
-composer create-project --prefer-dist laravel/laravel .
-```
-
-Ganti konfigurasi `laravel/.env`, comment bagian `DB_DATABASE`, `DB_PORT`, `DB_USERNAME`, dan `DB_PASSWORD` karena diambil langsung dari env docker
-
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-#DB_PORT=3306
-#DB_DATABASE=laravel
-#DB_USERNAME=root
-#DB_PASSWORD=
-```
-
-keluar dari docker workspace ganti ownership file
-
-```
-cd /laravel
-sudo find . -type f -exec chmod 664 {} \;
-sudo find . -type d -exec chmod 775 {} \;
-sudo chown $(whoami):www-data . -R
-```
-
-Buka aplikasi http://`$domain`
 

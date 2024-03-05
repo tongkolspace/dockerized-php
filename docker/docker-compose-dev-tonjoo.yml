@@ -9,7 +9,7 @@ services:
       context: ./php-fpm
       dockerfile: Dockerfile
     env_file:
-      - .env-dev-tonjoo
+      - .env-dev-local
     environment:
       TZ: ${TZ}
     volumes:
@@ -82,7 +82,7 @@ services:
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
       - ../wordpress:/var/www/html
     env_file:
-      - .env-dev-tonjoo
+      - .env-dev-local
     environment:
       TZ: "${TZ}"
     networks:
@@ -101,7 +101,7 @@ services:
       - ./supervisor/supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
       - ./supervisor/supervisor.conf/wordpress.conf:/etc/supervisor/conf.d/wordpress.conf
     env_file:
-      - .env-dev-tonjoo
+      - .env-dev-local
     environment:
       TZ: "${TZ}"
     networks:

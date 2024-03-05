@@ -21,7 +21,7 @@ check_folder() {
 }
 
 load_env ".env"
-base_recipe_url=${BASE_RECIPE_URL:-https://git.tonjoo.com/umum/dockerized-php-recipes/-/raw/main}
+base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspace/dockerized-php-recipes/main}
 
 if [ "$1" == "wordpress" ]
 then
@@ -44,7 +44,7 @@ then
     wget -O "$script_dir/wordpress/.gitignore" "$base_recipe_url/recipes/wordpress/gitignore"
 
     cp "$script_dir/docker/.env-sample" docker/.env
-    cp "$script_dir/docker/.env-dev-tonjoo-sample" docker/.env-dev-tonjoo
+    cp "$script_dir/docker/.env-dev-local-sample" docker/.env-dev-local
     cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
     
     echo "Enter password for htaccess, user = traefik"
@@ -64,7 +64,7 @@ then
     echo "Clean WordPress and .env file.."
     rm "$script_dir/wordpress" -rf
     rm "$script_dir/docker/.env"
-    rm "$script_dir/docker/.env-dev-tonjoo"
+    rm "$script_dir/docker/.env-dev-local"
     rm "$script_dir/docker/.env-dev-proxy"
     rm "$script_dir/docker/nginx/.htpasswd"
     sudo rm "$script_dir/docker/mysql/datadir/" -rf
