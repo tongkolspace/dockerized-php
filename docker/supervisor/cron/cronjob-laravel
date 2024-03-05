@@ -1,0 +1,1 @@
+* * * * * su -s /bin/sh www-data -c 'cd /var/www/html && /usr/local/bin/php artisan schedule:run' > /proc/1/fd/1 2>&1

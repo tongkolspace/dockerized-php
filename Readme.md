@@ -1,3 +1,27 @@
+# Lest Fast
+
+```
+host 
+127.0.0.1 wordpress.local proxy.dev.local
+
+git clone git@git.tonjoo.com:tonjoo/tonjoo-admin-panel.git tap-project && cd tap-project && rm .git -rf
+git init
+
+
+cp docker/.env-sample docker/.env
+htpasswd -c docker/nginx/.htpasswd traefik
+
+sudo chown $USER:www-data wordpress/ -R
+sudo chmod 775 wordpress/ -R
+sudo chmod -R gu+w wordpress/storage
+sudo chmod -R guo+w wordpress/storage
+
+cd docker/traefik/certs
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
+
+```
+
+
 # PHP Docker Stack
 
 Merupakah docker stack `production ready` untuk aplikasi PHP 

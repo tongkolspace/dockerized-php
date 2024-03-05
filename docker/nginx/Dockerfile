@@ -1,4 +1,3 @@
-# Use Ubuntu 22.04 as base image
 FROM ubuntu:22.04
 
 LABEL maintainer="Todi Adiyatmo <todiadiyatmo@gmail.com>"
@@ -7,7 +6,9 @@ LABEL org.label-schema.name="nginx-ee"
 
 
 # Install wget and curl (necessary for the script)
-RUN apt-get update && apt-get install -y wget curl software-properties-common unzip iputils-ping wget nano\
+RUN apt-get update && apt-get install -yq tzdata  wget curl software-properties-common unzip iputils-ping wget nano logrotate cron\
+    && ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime  \
+    && dpkg-reconfigure -f noninteractive tzdata \
     && add-apt-repository ppa:wordops/nginx-wo -uy && apt-get update \
     && apt install nginx-custom nginx-wo -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
@@ -22,4 +23,4 @@ RUN  wget https://github.com/VirtuBox/nginx-config/archive/refs/heads/master.zip
 EXPOSE 80 443
 
 # Set the default command to start Nginx in the foreground
-CMD ["nginx", "-g", "daemon off;"]
+CMD service cron start && nginx -g 'daemon off;'

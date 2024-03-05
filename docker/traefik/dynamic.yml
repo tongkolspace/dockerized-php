@@ -1,0 +1,8 @@
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        # certFile: /certs/dev.local+1.pem
+        # keyFile: /certs/dev.local+1-key.pem
+        certFile: /certs/server.crt
+        keyFile: /certs/server.key

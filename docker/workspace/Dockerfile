@@ -17,8 +17,6 @@ RUN set -ex; \
         inetutils-ping \
         gnupg \
         ntp \
-        cron \
-        supervisor \
     &&  rm -rf /etc/cron.*/* \
     # # #####################################
     # # # Node & NPM
@@ -30,14 +28,6 @@ RUN set -ex; \
     && apt-get update \
     && apt-get install nodejs nano iputils-ping traceroute redis-tools -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    # # #####################################
-    # # # Add exec-www wrapper
-    # # #####################################
-    && echo "" >> /root/.bashrc  \
-    && echo "exec-www() {" >> /root/.bashrc  \
-    && echo "    su -s /bin/sh www-data -c \"\$*\"" >> /root/.bashrc  \
-    && echo "}" >> /root/.bashrc \
-    && echo "" >> /root/.bashrc  \
     ######################################
     # Add user workspace and asign id=1000
     ######################################
@@ -47,9 +37,6 @@ RUN set -ex; \
     && mkdir /home/workspace  \
     && chown workspace:workspace /home/workspace
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod 755 /entrypoint.sh
-
+USER  workspace
 WORKDIR  /var/www/html
-
-ENTRYPOINT ["/entrypoint.sh"]
+CMD []
