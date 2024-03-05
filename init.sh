@@ -44,6 +44,8 @@ then
     wget -O "$script_dir/wordpress/.gitignore" "$base_recipe_url/recipes/wordpress/gitignore"
 
     cp "$script_dir/docker/.env-sample" docker/.env
+    cp "$script_dir/docker/.env-dev-tonjoo-sample" docker/.env-dev-tonjoo
+    cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
     
     echo "Enter password for htaccess, user = traefik"
     htpasswd -c "$script_dir/docker/nginx/.htpasswd" traefik
@@ -62,6 +64,8 @@ then
     echo "Clean WordPress and .env file.."
     rm "$script_dir/wordpress" -rf
     rm "$script_dir/docker/.env"
+    rm "$script_dir/docker/.env-dev-tonjoo"
+    rm "$script_dir/docker/.env-dev-proxy"
     rm "$script_dir/docker/nginx/.htpasswd"
     sudo rm "$script_dir/docker/mysql/datadir/" -rf
 fi
