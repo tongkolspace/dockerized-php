@@ -9,7 +9,7 @@ services:
       context: ./php-fpm
       dockerfile: Dockerfile
     env_file:
-      - .env-dev-tonjoo
+      - .env
     environment:
       TZ: ${TZ}
     volumes:
@@ -93,7 +93,7 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"       
       TZ: ${TZ}
     volumes:
-      - ./mysql/config:/etc/mysql/conf.d
+      - ./mysql/config/mysql-dev.cnf:/etc/my.cnf
       - ./mysql/datadir:/var/lib/mysql
     networks:
       - external

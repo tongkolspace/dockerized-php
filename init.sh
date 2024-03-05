@@ -53,7 +53,7 @@ then
     sudo chown "$USER:www-data" "$script_dir/wordpress/" -R
     sudo chmod 775 "$script_dir/wordpress/" -R
     
-    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
+    sudo openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
     -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" \
     -keyout "$script_dir/docker/traefik/certs/server.key" -out "$script_dir/docker/traefik/certs/server.crt"
 

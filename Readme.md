@@ -54,7 +54,7 @@ Merupakah docker stack `production ready` untuk aplikasi PHP
 
 # Wrapper.sh
 
-Untuk mempermudah development dapat menggunakan `./wrapper.sh`
+Untuk mempermudah management docker-compose gunakan file `./wrapper.sh`
 
 ```
 ./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [up|down|logs|restart|exec]
