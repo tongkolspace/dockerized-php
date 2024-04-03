@@ -100,23 +100,28 @@ then
 elif [ "$1" == "mysql-console" ]
 then
     cd "$script_dir/docker"
-    docker compose $compose_command exec db mysql -u root -p$MYSQL_ROOT_PASSWORD
+    docker compose $compose_command exec db mariadb -u root -p$MYSQL_ROOT_PASSWORD
     cd $current_dir
 elif [ "$1" == "mysql-dump" ]
 then
 
-    if [ "$2" == "" ]; then
-
+    # Check if a database name is provided
+    if [ -z "$2" ]; then
+        # If not provided, use either DB_NAME or DB_DATABASE
         EXPORT_DB_NAME=${DB_NAME:-$DB_DATABASE}
 
         if [ -z "$EXPORT_DB_NAME" ]; then
-            echo "Please specify db name"
+            echo "Please specify the database name"
+            exit 1  # Exit the script if the database name is not provided
         fi
+    else
+        # Use the provided database name
+        EXPORT_DB_NAME="$2"
     fi
 
     cd "$script_dir/docker"
     echo "Dumping database $EXPORT_DB_NAME into $script_dir/../$EXPORT_DB_NAME.sql"
-    docker-compose $compose_command exec -T db mysqldump -u root -p$MYSQL_ROOT_PASSWORD $EXPORT_DB_NAME > ../$EXPORT_DB_NAME$(date +%Y%m%d%H%M%S).sql
+    docker-compose $compose_command exec -T db mariadb-dump -u root -p$MYSQL_ROOT_PASSWORD $EXPORT_DB_NAME > ../$EXPORT_DB_NAME-$(date +%Y%m%d%H%M%S).sql
     cd $current_dir
 elif [ "$1" == "mysql-import" ]
 then
@@ -129,7 +134,7 @@ then
 
     cd "$script_dir/docker"
     echo "import database to $2 from $script_dir/../$3"
-    docker compose $compose_command exec -T db mysql -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
+    docker-compose $compose_command exec -T db mariadb -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
     cd $current_dir
 elif [[ $2 =~ ^(workspace|node)-.*$ ]] && [[ $1 =~ ^(exec|run)$ ]]; then
     cd "$script_dir/docker"
