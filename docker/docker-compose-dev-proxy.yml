@@ -62,17 +62,18 @@ services:
       - "traefik.http.services.traefik-admin-${APP_NAME}.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
     networks:
-      - external
       - internal
+      - external
     depends_on:
       - traefik
     environment:
       TZ: ${TZ}
 networks:
+  internal:
+    name: A-${NETWORK}
   external:
     external: true
     name: ${NETWORK}
-  internal:
 
 volumes:
    acme:

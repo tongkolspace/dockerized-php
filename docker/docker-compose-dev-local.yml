@@ -17,8 +17,8 @@ services:
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
       - ./php-fpm/php-fpm-prod.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
     networks:
-      - external
       - internal
+      - external
   nginx:
     image: tongkolspace/nginx-ee:v1.0.2
     container_name: nginx-wordpress-${APP_NAME}
@@ -42,8 +42,8 @@ services:
       - php-fpm
       - redis
     networks:
-      - external
       - internal
+      - external
     environment:
       TZ: ${TZ}
     labels:
@@ -124,8 +124,8 @@ services:
       - ./mysql/config/mysql-prod.cnf:/etc/my.cnf
       - ./mysql/datadir:/var/lib/mysql
     networks:
-      - external
       - internal
+      - external
   pma:
     # Akses dengan http://domain/pma/ (wajib dengan slash)
     image: phpmyadmin/phpmyadmin
@@ -152,7 +152,8 @@ services:
     networks:
       - internal
 networks:
+  internal:
+    name: A-${NETWORK}
   external:
     external: true
     name: ${NETWORK}
-  internal:
