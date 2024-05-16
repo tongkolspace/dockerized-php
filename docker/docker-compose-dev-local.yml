@@ -79,6 +79,7 @@ services:
       context: ./workspace
       dockerfile: Dockerfile
     volumes:
+      - ./mysql/mysqltuner:/mysqltuner
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
       - ../wordpress:/var/www/html
     env_file:
