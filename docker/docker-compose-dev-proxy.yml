@@ -42,7 +42,7 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ../nginx/empty:/var/www/html
+      - ./nginx/empty:/var/www/html
       - ../admin/index-traefik.html:/var/www/admin/index.html
       # - ./nginx/sites-enabled/backend.conf:/etc/nginx/sites-enabled/default
       - ./nginx/sites-enabled/admin-traefik.conf:/etc/nginx/sites-enabled/admin.conf
