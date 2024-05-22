@@ -6,3 +6,4 @@ docker/*.env*
 *.sql
 .htpasswd
 .vscode
+wordpress/*

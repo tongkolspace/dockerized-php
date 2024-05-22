@@ -13,7 +13,7 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-      - ../wordpress:/var/www/html/
+      - ../wordpress:/var/www/html/wordpress
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
       - ./php-fpm/php-fpm-prod.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
     networks:
@@ -27,9 +27,9 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ../wordpress:/var/www/html
+      - ../wordpress:/var/www/html/wordpress
       - ../admin/index.html:/var/www/admin/index.html
-      - ./nginx/sites-enabled/wordpress.conf:/etc/nginx/sites-enabled/default
+      - ./nginx/sites-enabled/wordpress-subfolder.conf:/etc/nginx/sites-enabled/default
       - ./nginx/sites-enabled/admin.conf:/etc/nginx/sites-enabled/admin.conf
       - ./nginx/log:/var/log/nginx
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -81,7 +81,7 @@ services:
     volumes:
       - ./mysql/mysqltuner:/mysqltuner
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ../wordpress:/var/www/html
+      - ../wordpress:/var/www/html/wordpress
     env_file:
       - .env-dev-local
     environment:
@@ -97,7 +97,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ../wordpress:/var/www/html
+      - ../wordpress:/var/www/html/wordpress
       - ./supervisor/cron/cronjob-wordpress:/tmp/cronjob
       - ./supervisor/supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
       - ./supervisor/supervisor.conf/wordpress.conf:/etc/supervisor/conf.d/wordpress.conf
