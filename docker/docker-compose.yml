@@ -13,7 +13,7 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-      - ../wordpress:/var/www/html/
+      - ../wordpress:/var/www/html/wordpress
       - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
       - ./php-fpm/php-fpm-dev.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
     networks:
@@ -27,9 +27,10 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ../wordpress:/var/www/html
+      - ../wordpress:/var/www/html/wordpress
       - ../admin:/var/www/admin
       - ./nginx/sites-enabled/admin-dev.conf:/etc/nginx/sites-enabled/admin.conf
+      # - ./nginx/sites-enabled/wordpress-subfolder.conf:/etc/nginx/sites-enabled/default
       - ./nginx/sites-enabled/wordpress.conf:/etc/nginx/sites-enabled/default
       - ./nginx/log:/var/log/nginx
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -67,7 +68,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ../wordpress:/var/www/html
+      - ../wordpress:/var/www/html/wordpress
     env_file:
       - .env
     environment:

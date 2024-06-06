@@ -10,6 +10,7 @@ function load_env {
         export $(grep -v '^#' $1 | xargs)
     else
         echo "No .env file found in $1"
+        exit
     fi
 }
 
@@ -19,8 +20,8 @@ check_folder() {
     exit
   fi
 }
-
-load_env ".env"
+load_env "docker/.env"
+# exit
 base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspace/dockerized-php-recipes/main}
 
 if [ "$1" == "wordpress" ]
@@ -43,12 +44,11 @@ then
     wget -P "$script_dir/wordpress" "$base_recipe_url/recipes/wordpress/wp-config.php"
     wget -O "$script_dir/wordpress/.gitignore" "$base_recipe_url/recipes/wordpress/gitignore"
 
-    cp "$script_dir/docker/.env-sample" docker/.env
-    cp "$script_dir/docker/.env-dev-local-sample" docker/.env-dev-local
-    cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
+    # cp "$script_dir/docker/.env-sample" docker/.env
+    # cp "$script_dir/docker/.env-dev-local-sample" docker/.env-dev-local
+    # cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
     
-    echo "Enter password for htaccess, user = traefik"
-    htpasswd -c "$script_dir/docker/nginx/.htpasswd" traefik
+   htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
 
     sudo chown "$USER:www-data" "$script_dir/wordpress/" -R
     sudo chmod 775 "$script_dir/wordpress/" -R
@@ -58,14 +58,15 @@ then
     -keyout "$script_dir/docker/traefik/certs/server.key" -out "$script_dir/docker/traefik/certs/server.crt"
 
     echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh up"
+    echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
 
 elif [ "$1" == "clean" ]
 then
     echo "Clean WordPress and .env file.."
     rm "$script_dir/wordpress" -rf
-    rm "$script_dir/docker/.env"
-    rm "$script_dir/docker/.env-dev-local"
-    rm "$script_dir/docker/.env-dev-proxy"
-    rm "$script_dir/docker/nginx/.htpasswd"
+    # rm "$script_dir/docker/.env"
+    # rm "$script_dir/docker/.env-dev-local"
+    # rm "$script_dir/docker/.env-dev-proxy"
+    rm "$script_dir/docker/nginx/.htpasswd -rf"
     sudo rm "$script_dir/docker/mysql/datadir/" -rf
 fi
