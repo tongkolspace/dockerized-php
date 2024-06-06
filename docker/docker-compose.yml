@@ -30,7 +30,8 @@ services:
       - ../wordpress:/var/www/html/wordpress
       - ../admin:/var/www/admin
       - ./nginx/sites-enabled/admin-dev.conf:/etc/nginx/sites-enabled/admin.conf
-      - ./nginx/sites-enabled/wordpress-subfolder.conf:/etc/nginx/sites-enabled/default
+      # - ./nginx/sites-enabled/wordpress-subfolder.conf:/etc/nginx/sites-enabled/default
+      - ./nginx/sites-enabled/wordpress.conf:/etc/nginx/sites-enabled/default
       - ./nginx/log:/var/log/nginx
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/common-extra:/etc/nginx/common-extra
