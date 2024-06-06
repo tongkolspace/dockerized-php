@@ -63,10 +63,10 @@ then
 elif [ "$1" == "clean" ]
 then
     echo "Clean WordPress and .env file.."
-    rm "$script_dir/wordpress" -rf
+    sudo rm "$script_dir/wordpress" -rf
     # rm "$script_dir/docker/.env"
     # rm "$script_dir/docker/.env-dev-local"
     # rm "$script_dir/docker/.env-dev-proxy"
-    rm "$script_dir/docker/nginx/.htpasswd -rf"
+    sudo rm "$script_dir/docker/nginx/.htpasswd -rf"
     sudo rm "$script_dir/docker/mysql/datadir/" -rf
 fi

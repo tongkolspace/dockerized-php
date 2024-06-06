@@ -1,5 +1,7 @@
 # Cara Cepat
 
+Guide Video -> [Link](https://storage.tongkolspace.com/tonjoo/WordPress%20Docker%20Tutorial.mp4)
+
 Tambahkan host berikut
 ```
 127.0.0.1 wordpress.local proxy.dev.local
@@ -10,6 +12,7 @@ Menjalankan `env` development
 git clone git@github.com:tongkolspace/dockerized-php.git dockerized-php && cd dockerized-php && rm .git -rf
 git init
 
+cp docker/.env-sample docker/.env
 bash init.sh wordpress
 
 # Ganti password pada file .env
@@ -75,7 +78,7 @@ Untuk mempermudah management docker-compose gunakan file `./wrapper.sh`
 ./wrapper.sh exec db bash
 
 # Menjalankan container workspace
-./wrapper.sh run --user=www-data workspace bash
+./wrapper.sh run --rm --user=www-data workspace-wordpress bash
 
 # masuk ke console mysql
 # docker compose $compose_file exec db mysql -u root -p$MYSQL_ROOT_PASSWORD
