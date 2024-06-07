@@ -67,6 +67,6 @@ then
     # rm "$script_dir/docker/.env"
     # rm "$script_dir/docker/.env-dev-local"
     # rm "$script_dir/docker/.env-dev-proxy"
-    sudo rm "$script_dir/docker/nginx/.htpasswd -rf"
-    sudo rm "$script_dir/docker/mysql/datadir/" -rf
+    sudo rm -rf "$script_dir/docker/nginx/.htpasswd"
+    sudo rm -rf "$script_dir/docker/mysql/datadir/" 
 fi
