@@ -70,7 +70,7 @@ services:
       TZ: ${TZ}
 networks:
   internal:
-    name: A-${NETWORK}
+    name: ${APP_NAME}-${NETWORK}
   external:
     external: true
     name: ${NETWORK}

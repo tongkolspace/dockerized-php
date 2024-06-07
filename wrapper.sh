@@ -6,6 +6,7 @@ function help_wrapper {
     echo "./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-console]"
     echo "./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-dump]"
     echo "./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-import] [db-name] [import-file]"
+    echo "./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [secure]"
     echo "./wrapper.sh  [permission] [directory]"
     echo "./wrapper.sh  [help]"
     exit 1
@@ -92,6 +93,10 @@ then
 #     cd "$script_dir/docker"
 #     docker compose $compose_command logs "$@"
 #     cd $current_dir
+elif [ "$1" == "secure" ] 
+then
+    htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
+    echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
 elif [ "$1" == "log-tail" ]
 then
     cd "$script_dir/docker"

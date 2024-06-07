@@ -20,6 +20,20 @@ check_folder() {
     exit
   fi
 }
+
+setup_http() {
+    htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
+
+    sudo chown "$USER:www-data" "$script_dir/wordpress/" -R
+    sudo chmod 775 "$script_dir/wordpress/" -R
+    
+    sudo openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
+    -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" \
+    -keyout "$script_dir/docker/traefik/certs/server.key" -out "$script_dir/docker/traefik/certs/server.crt"
+
+    echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
+}
+
 load_env "docker/.env"
 # exit
 base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspace/dockerized-php-recipes/main}
@@ -47,19 +61,12 @@ then
     # cp "$script_dir/docker/.env-sample" docker/.env
     # cp "$script_dir/docker/.env-dev-local-sample" docker/.env-dev-local
     # cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
-    
-   htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
-
-    sudo chown "$USER:www-data" "$script_dir/wordpress/" -R
-    sudo chmod 775 "$script_dir/wordpress/" -R
-    
-    sudo openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
-    -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" \
-    -keyout "$script_dir/docker/traefik/certs/server.key" -out "$script_dir/docker/traefik/certs/server.crt"
+    setup_http
 
     echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh up"
-    echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
-
+elif [ "$1" == "http" ]
+then
+    setup_http
 elif [ "$1" == "clean" ]
 then
     echo "Clean WordPress and .env file.."
