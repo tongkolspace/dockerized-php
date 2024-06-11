@@ -1,7 +1,4 @@
 # Cara Cepat
-
-Guide Video -> [Link](https://storage.tongkolspace.com/tonjoo/WordPress%20Docker%20Tutorial.mp4)
-
 Tambahkan host berikut
 ```
 127.0.0.1 wordpress.local proxy.dev.local
