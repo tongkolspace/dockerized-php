@@ -10,12 +10,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.tls=true"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.routers.traefik-dashboard-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
+      - "traefik.http.routers.traefik-dashboard-${APP_NAME}.rule=Host(`${DOMAIN_PROXY}`)"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.entrypoints=traefik-dashboard"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.service=api@internal"
       # global redirect to https
       - "traefik.http.routers.http-catchall-${APP_NAME}.rule=hostregexp(`{host:.+}`)"
-      - "traefik.http.routers.http-catchall-${APP_NAME}.entrypoints=web,admin,admin-traefik"
+      - "traefik.http.routers.http-catchall-${APP_NAME}.entrypoints=web,admin"
       - "traefik.http.routers.http-catchall-${APP_NAME}.middlewares=redirect-to-https-${APP_NAME}"
       # # middleware redirect
       - "traefik.http.middlewares.redirect-to-https-${APP_NAME}.redirectscheme.scheme=https"
@@ -23,7 +23,8 @@ services:
       - "80:80" 
       - "443:443"
       - "57710:57710"
-      - "57712:57712"
+      # Debugging
+      # - "57711:57711"
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml
@@ -55,8 +56,8 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-admin-${APP_NAME}.tls=true"
       - "traefik.http.routers.traefik-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.routers.traefik-admin-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
-      - "traefik.http.routers.traefik-admin-${APP_NAME}.entrypoints=admin-traefik"
+      - "traefik.http.routers.traefik-admin-${APP_NAME}.rule=Host(`${DOMAIN_PROXY}`)"
+      - "traefik.http.routers.traefik-admin-${APP_NAME}.entrypoints=admin"
       - "traefik.http.routers.traefik-admin-${APP_NAME}.service=traefik-admin-${APP_NAME}"
       - "traefik.http.services.traefik-admin-${APP_NAME}.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
