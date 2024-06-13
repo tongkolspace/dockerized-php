@@ -41,7 +41,7 @@ bash wrapper.sh dev-local dev-proxy up
 |------------|---------|
 | WordPress | https://wordpress.local |
 | Admin | https://wordpress.local:57710 |
-| Admin Traefik | https://proxy.dev.local:57710 |
+| Admin Traefik | https://wordpress.local:57712 |
 
 # PHP Docker Stack
 
