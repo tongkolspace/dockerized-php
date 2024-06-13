@@ -34,10 +34,21 @@ setup_http() {
     echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
 }
 
+setup_network() {
+    # Check if the network "$NETWORK" exists
+    found=$(docker network ls --format "{{.Name}}" | awk -v net="$NETWORK" '$0 == net {count++} END {print count}')
+    if [ -n "$found" ]; then
+        echo "Network '$NETWORK' already exists."
+    else
+        echo "Network '$NETWORK' does not exist, creating it..."
+        docker network create $NETWORK
+    fi
+}
+
+
 load_env "docker/.env"
 # exit
 base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspace/dockerized-php-recipes/main}
-
 if [ "$1" == "wordpress" ]
 then
     check_folder "$script_dir/$1";
@@ -62,6 +73,7 @@ then
     # cp "$script_dir/docker/.env-dev-local-sample" docker/.env-dev-local
     # cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
     setup_http
+    setup_network
 
     echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh up"
 elif [ "$1" == "http" ]
