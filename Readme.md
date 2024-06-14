@@ -287,3 +287,32 @@ Jika halaman tidak ingin dicache bisa mengirimkan header `no-cache` hal ini bisa
 
 Secara default user tidak login akan tercache. 
 
+
+### WebP Converter
+
+Untuk mengaktfikan WebP jalankan kita dapat menggunakan docker https://hub.docker.com/r/darthsim/imgproxy/. Konfigurasi docker-compose terdapat pada file `docker/docker-compose-dev-imageproxy.yml`
+
+Cara mengaktifkan WebP
+
+Tambahkan host berikut
+
+```
+127.0.0.1 cdn.wordpress.local
+```
+
+Jalankan perintah berikut
+```
+bash wrapper.sh dev-proxy dev-local dev-imgproxy up
+```
+
+Setelah docker berjalan, akses 1 file dengan mengubah domain menjadi `cdn.wordpress.local` misalnya 
+
+```
+https://wordpress.local/wp-content/uploads/2024/06/2023-05-29_09-38.png
+
+# versi CDN
+https://cdn.wordpress.local/wp-content/uploads/2024/06/2023-05-29_09-38.png
+```
+
+Jika konversi berjalan lancar aktifkan plugin CDN pada WordPress misalnya menggunakan `cdn enabler`. 
+Pada plugin `cdn enabler` input host cdn menjadi `cdn.wordpress.local`
