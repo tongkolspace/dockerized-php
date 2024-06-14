@@ -45,18 +45,29 @@ setup_network() {
     fi
 }
 
+install_wordpress() {
+    # Run the WordPress Install
+    bash wrapper.sh run --rm -v ./wordpress:/var/www/html workspace-wordpress wp core install --url="http://$DOMAIN_WORDPRESS" --title='Site title' --admin_user='admin' --admin_password='123456' --admin_email='admin@example.com'
+    echo "Akses     : http://$DOMAIN_WORDPRESS"
+    echo "Username  : admin"
+    echo "Password  : 123456"
+}
+
 
 load_env "docker/.env"
 # exit
 base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspace/dockerized-php-recipes/main}
-if [ "$1" == "wordpress" ]
+if [ "$1" == "install_wordpress" ]
+then
+    install_wordpress
+elif [ "$1" == "wordpress" ]
 then
     check_folder "$script_dir/$1";
 
     # Check if wordpress directory exists, if not create directory wordpress
     mkdir "$script_dir/wordpress"
     
-    # Run the Docker command
+    # Download WordPress
     docker run --rm -v ./wordpress:/var/www/html tongkolspace/workspace:8.1-v1.0.1 wp core download
 
     # Install redis plugin
@@ -76,6 +87,8 @@ then
     setup_network
 
     echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh up"
+    echo "Untuk instalasi WordPress otomatis jalankan bash init.sh install_wordpress setelah menjalankan docker"
+
 elif [ "$1" == "http" ]
 then
     setup_http

@@ -1,5 +1,6 @@
 docker/mysql/datadir/*
 docker/nginx/log/*
+docker/nginx/tmp/*
 docker/traefik/certs/*
 docker/*.env*
 *.log
