@@ -47,6 +47,7 @@ setup_network() {
 
 install_wordpress() {
     # Run the WordPress Install
+    # bash wrapper.sh up -d
     bash wrapper.sh run --rm -v ./wordpress:/var/www/html workspace-wordpress wp core install --url="http://$DOMAIN_WORDPRESS" --title='Site title' --admin_user='admin' --admin_password='123456' --admin_email='admin@example.com'
     echo "Akses     : http://$DOMAIN_WORDPRESS"
     echo "Username  : admin"
@@ -89,7 +90,7 @@ then
     echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh up"
     echo "Untuk instalasi WordPress otomatis jalankan bash init.sh install_wordpress setelah menjalankan docker"
 
-elif [ "$1" == "http" ]
+elif [ "$1" == "setup_http" ]
 then
     setup_http
 elif [ "$1" == "clean" ]
@@ -101,4 +102,11 @@ then
     # rm "$script_dir/docker/.env-dev-proxy"
     sudo rm -rf "$script_dir/docker/nginx/.htpasswd"
     sudo rm -rf "$script_dir/docker/mysql/datadir/" 
+else 
+    echo "penggunaan"
+    echo "bash init.sh install"
+    echo "bash init.sh clean"
+    echo "bash init.sh install_wordpress"
+    echo "bash init.sh http"
+
 fi
