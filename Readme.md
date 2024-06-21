@@ -7,6 +7,7 @@ Tambahkan host berikut
 Menjalankan `env` development
 ```
 git clone git@github.com:tongkolspace/dockerized-php.git dockerized-php && cd dockerized-php && rm .git -rf
+sed -i '/^wordpress\/\*/d' .gitignore
 git init
 
 cp docker/.env-sample docker/.env
