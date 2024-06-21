@@ -132,7 +132,7 @@ services:
 
       ### Compression
       ### See: https://docs.imgproxy.net/configuration/options#compression
-      IMGPROXY_QUALITY: 80
+      IMGPROXY_QUALITY: 90
       IMGPROXY_FORMAT_QUALITY: jpeg=80,webp=70,avif=50
       IMGPROXY_JPEG_PROGRESSIVE: false
       IMGPROXY_PNG_INTERLACED: false
