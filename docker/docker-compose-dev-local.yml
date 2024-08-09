@@ -90,7 +90,7 @@ services:
       - internal
       - external
   supervisor:
-    image: tongkolspace/supervisor:8.1-v1.0.0
+    image: tongkolspace/supervisor:8.1-v1.0.1
     container_name: workspace-supervisor-${APP_NAME}
     build:
       context: ./supervisor
