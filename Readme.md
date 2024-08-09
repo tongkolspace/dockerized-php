@@ -10,7 +10,8 @@ git clone git@github.com:tongkolspace/dockerized-php.git dockerized-php && cd do
 sed -i '/^wordpress\/\*/d' .gitignore
 git init
 
-cp docker/.env-sample docker/.env
+#cp docker/.env-sample docker/.env
+bash wrapper.sh copy_env .env-sample .env
 bash init.sh wordpress
 
 # Ganti password pada file .env
@@ -30,8 +31,8 @@ Menjalankan `env` production
 bash wrapper.sh down
 
 # Ganti password pada file .env-dev-local dan .env-dev-proxy
-nano docker/.env-dev-local
-nano docker/.env-dev-proxy
+bash wrapper.sh copy_env .env-dev-local .env-dev-local-sample
+bash wrapper.sh copy_env .env-dev-proxy .env-dev-proxy-sample
 
 bash wrapper.sh dev-local dev-proxy up
 ```

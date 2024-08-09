@@ -93,7 +93,7 @@ services:
     image: tongkolspace/supervisor:8.1-v1.0.0
     container_name: workspace-supervisor-${APP_NAME}
     build:
-      context: ./workspace
+      context: ./supervisor
       dockerfile: Dockerfile
     volumes:
       - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini

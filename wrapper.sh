@@ -7,6 +7,7 @@ function help_wrapper {
     echo "./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-dump]"
     echo "./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [mysql-import] [db-name] [import-file]"
     echo "./wrapper.sh  ?[dev-*|prod-*|staging-*|pre-prod-*] [secure]"
+    echo "./wrapper.sh  [copy_env] $sample-env $env"
     echo "./wrapper.sh  [permission] [directory]"
     echo "./wrapper.sh  [help]"
     exit 1
@@ -20,6 +21,37 @@ function load_env {
     else
         echo "No .env file found in $1"
     fi
+}
+
+function copy_env {
+    # Define the path to the sample file and the new file
+    sample_file="$script_dir/docker/$1"
+    new_file="$script_dir/docker/$2"
+    
+    # Check if the sample file exists
+    if [ ! -f "$sample_file" ]; then
+        echo "Sample file does not exist: $sample_file"
+        exit 1
+    fi
+    > "$new_file"
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ "$line" =~ ([A-Z0-9]+_PASSWORD|PASSWORD_[A-Z0-9]+)[^=]*= ]]; then
+            # Detect if openssl is available for random password generation
+            if command -v openssl >/dev/null 2>&1; then
+                new_password=$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9' | head -c 24)
+            else
+                new_password=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c 24)
+            fi
+            # Replace the value after '=' with the new password
+            line="${line%%=*}=$new_password"
+        fi
+        # Write the possibly modified line to the destination file
+        echo "$line" >> "$new_file"
+    done < "$sample_file"
+
+
+    echo "Environment file created: $new_file"
 }
 
 
@@ -42,6 +74,10 @@ then
         echo "Directory $2 does not exist."
         exit 
     fi
+elif [ "$1" == "copy_env" ]
+then
+    copy_env "$2" "$3"
+    exit
 elif [ "$1" == "help" ]
 then
     help_wrapper
@@ -125,7 +161,7 @@ then
     fi
 
     cd "$script_dir/docker"
-    echo "Dumping database $EXPORT_DB_NAME into $script_dir/../$EXPORT_DB_NAME.sql"
+    echo "Dumping database $EXPORT_DB_NAME into $script_dir/$EXPORT_DB_NAME.sql"
     docker-compose $compose_command exec -T db mariadb-dump -u root -p$MYSQL_ROOT_PASSWORD $EXPORT_DB_NAME > ../$EXPORT_DB_NAME-$(date +%Y%m%d%H%M%S).sql
     cd $current_dir
 elif [ "$1" == "mysql-import" ]
