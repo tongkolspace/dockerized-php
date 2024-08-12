@@ -14,6 +14,7 @@ function load_env {
     fi
 }
 
+
 check_folder() {
   if [ -d "$1" ]; then
     echo "Folder $1 already exists, exiting"
@@ -21,17 +22,21 @@ check_folder() {
   fi
 }
 
-setup_http() {
-    htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
+setup_htaccess() {
+    sudo htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
 
     sudo chown "$USER:www-data" "$script_dir/wordpress/" -R
     sudo chmod 775 "$script_dir/wordpress/" -R
-    
+
+    echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
+}
+
+setup_fake_https_cert(){
+        
     sudo openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \
     -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" \
     -keyout "$script_dir/docker/traefik/certs/server.key" -out "$script_dir/docker/traefik/certs/server.crt"
 
-    echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
 }
 
 setup_network() {
@@ -55,13 +60,18 @@ install_wordpress() {
 }
 
 
-load_env "docker/.env"
+if [[ "$1" =~ ^(dev-|prod-|staging-|pre-prod-) ]]; then
+    load_env "$script_dir/docker/.env-$1"
+    shift 1
+else 
+    load_env "$script_dir/docker/.env"
+fi
 # exit
 base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspace/dockerized-php-recipes/main}
 if [ "$1" == "install_wordpress" ]
 then
     install_wordpress
-elif [ "$1" == "wordpress" ]
+elif [ "$1" == "download_wordpress" ]
 then
     check_folder "$script_dir/$1";
 
@@ -84,15 +94,19 @@ then
     # cp "$script_dir/docker/.env-sample" docker/.env
     # cp "$script_dir/docker/.env-dev-local-sample" docker/.env-dev-local
     # cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
-    setup_http
+    setup_htaccess
+    setup_fake_https_cert
     setup_network
 
     echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh up"
     echo "Untuk instalasi WordPress otomatis jalankan bash init.sh install_wordpress setelah menjalankan docker"
 
-elif [ "$1" == "setup_http" ]
+elif [ "$1" == "setup_htaccess" ]
 then
-    setup_http
+    setup_htaccess
+elif [ "$1" == "setup_fake_https_cert" ]
+then
+    setup_fake_https_cert
 elif [ "$1" == "clean" ]
 then
     echo "Clean WordPress and .env file.."
@@ -104,9 +118,10 @@ then
     sudo rm -rf "$script_dir/docker/mysql/datadir/" 
 else 
     echo "penggunaan"
-    echo "bash init.sh install"
     echo "bash init.sh clean"
+    echo "bash init.sh download_wordpress"
     echo "bash init.sh install_wordpress"
-    echo "bash init.sh http"
+    echo "bash init.sh setup_htaccess"
+    echo "bash init.sh setup_fake_https_cert"
 
 fi

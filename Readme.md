@@ -12,7 +12,7 @@ git init
 
 #cp docker/.env-sample docker/.env
 bash wrapper.sh copy_env .env-sample .env
-bash init.sh wordpress
+bash init.sh download_wordpress
 
 # Ganti password pada file .env
 nano docker/.env
