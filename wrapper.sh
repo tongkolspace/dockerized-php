@@ -91,8 +91,8 @@ shift_count=0
 # Set Env for docker compose
 # Check if the first argument matches the pattern
 if [[ ! $1 =~ $docker_compose_pattern ]]; then
-    load_env "$script_dir/docker/.env"
-    compose_file="-f docker-compose.yml"
+    load_env "$script_dir/docker/.env-dev-local"
+    compose_file="-f docker-compose-dev-local.yml"
     # compose_env="--env-file=.env"
 else
     for params in "$@"; do
@@ -162,7 +162,7 @@ then
 
     cd "$script_dir/docker"
     echo "Dumping database $EXPORT_DB_NAME into $script_dir/$EXPORT_DB_NAME.sql"
-    docker-compose $compose_command exec -T db mariadb-dump -u root -p$MYSQL_ROOT_PASSWORD $EXPORT_DB_NAME > ../$EXPORT_DB_NAME-$(date +%Y%m%d%H%M%S).sql
+    docker compose $compose_command exec -T db mariadb-dump -u root -p$MYSQL_ROOT_PASSWORD $EXPORT_DB_NAME > ../$EXPORT_DB_NAME-$(date +%Y%m%d%H%M%S).sql
     cd $current_dir
 elif [ "$1" == "mysql-import" ]
 then
@@ -175,7 +175,7 @@ then
 
     cd "$script_dir/docker"
     echo "import database to $2 from $script_dir/../$3"
-    docker-compose $compose_command exec -T db mariadb -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
+    docker compose $compose_command exec -T db mariadb -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
     cd $current_dir
 elif [[ $2 =~ ^(workspace|node)-.*$ ]] && [[ $1 =~ ^(exec|run)$ ]]; then
     cd "$script_dir/docker"
@@ -193,9 +193,9 @@ elif [[ $2 =~ ^(workspace|node)-.*$ ]] && [[ $1 =~ ^(exec|run)$ ]]; then
     # --service-port jika dibutuhkan buka semua port
 
     if [[ $command == 'exec' ]]; then
-        docker-compose $compose_command exec --user=$user $workspace "$@"
+        docker compose $compose_command exec --user=$user $workspace "$@"
     elif [[ $command == 'run' ]]; then
-        docker-compose $compose_command run --rm --user=$user  $workspace "$@"
+        docker compose $compose_command run --rm --user=$user  $workspace "$@"
     fi
 
     cd $current_dir

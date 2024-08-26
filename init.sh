@@ -64,7 +64,7 @@ if [[ "$1" =~ ^(dev-|prod-|staging-|pre-prod-) ]]; then
     load_env "$script_dir/docker/.env-$1"
     shift 1
 else 
-    load_env "$script_dir/docker/.env"
+    load_env "$script_dir/docker/.env-dev-local"
 fi
 # exit
 base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspace/dockerized-php-recipes/main}

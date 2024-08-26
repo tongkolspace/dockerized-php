@@ -14,8 +14,8 @@ services:
       TZ: ${TZ}
     volumes:
       - ../wordpress:/var/www/html
-      - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ./php-fpm/php-fpm-prod.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
+      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+      - ./php-fpm/php-fpm-dev.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
     networks:
       - internal
       - external
@@ -28,9 +28,10 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ../wordpress:/var/www/html
-      - ../admin/index.html:/var/www/admin/index.html
+      - ../admin:/var/www/admin
+      - ./nginx/sites-enabled/admin-dev.conf:/etc/nginx/sites-enabled/admin.conf
+      # - ./nginx/sites-enabled/wordpress-subfolder.conf:/etc/nginx/sites-enabled/default
       - ./nginx/sites-enabled/wordpress.conf:/etc/nginx/sites-enabled/default
-      - ./nginx/sites-enabled/admin.conf:/etc/nginx/sites-enabled/admin.conf
       - ./nginx/log:/var/log/nginx
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/common-extra:/etc/nginx/common-extra
@@ -39,28 +40,15 @@ services:
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd
       - ./nginx/tmp/nginx:/tmp/nginx
     depends_on:
-      - php-fpm
       - redis
     networks:
       - internal
       - external
     environment:
       TZ: ${TZ}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.wordpress-${APP_NAME}.tls=true"
-      - "traefik.http.routers.wordpress-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.routers.wordpress-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
-      - "traefik.http.routers.wordpress-${APP_NAME}.entrypoints=web,websecure"
-      - "traefik.http.routers.wordpress-${APP_NAME}.service=wordpress-${APP_NAME}"
-      - "traefik.http.services.wordpress-${APP_NAME}.loadbalancer.server.port=80"
-      - "traefik.http.routers.wordpress-admin-${APP_NAME}.tls=true"
-      - "traefik.http.routers.wordpress-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.routers.wordpress-admin-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
-      - "traefik.http.routers.wordpress-admin-${APP_NAME}.entrypoints=admin"
-      - "traefik.http.routers.wordpress-admin-${APP_NAME}.service=wordpress-admin-${APP_NAME}"
-      - "traefik.http.services.wordpress-admin-${APP_NAME}.loadbalancer.server.port=57710"
-      - "traefik.docker.network=${NETWORK}"
+    ports:
+      - 80:80
+      - 57710:57710
   redis:
     image: redis:latest
     container_name: redis-wordpress-${APP_NAME}
@@ -79,8 +67,7 @@ services:
       context: ./workspace
       dockerfile: Dockerfile
     volumes:
-      - ./mysql/mysqltuner:/mysqltuner
-      - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
       - ../wordpress:/var/www/html
     env_file:
       - .env-dev-local
@@ -89,25 +76,10 @@ services:
     networks:
       - internal
       - external
-  supervisor:
-    image: tongkolspace/supervisor:8.1-v1.0.1
-    container_name: workspace-supervisor-${APP_NAME}
-    build:
-      context: ./supervisor
-      dockerfile: Dockerfile
-    volumes:
-      - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ../wordpress:/var/www/html
-      - ./supervisor/cron/cronjob-wordpress:/tmp/cronjob
-      - ./supervisor/supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
-      - ./supervisor/supervisor.conf/wordpress.conf:/etc/supervisor/conf.d/wordpress.conf
-    env_file:
-      - .env-dev-local
-    environment:
-      TZ: "${TZ}"
-    networks:
-      - internal
-      - external
+    ports:
+      # Bakend Laravel
+      - 8000:8000
+      - 5173:5173
   db:
     image: mariadb:11.3.2
     container_name: db-wordpress-${APP_NAME}
@@ -122,11 +94,11 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"       
       TZ: ${TZ}
     volumes:
-      - ./mysql/config/mysql-prod.cnf:/etc/my.cnf
+      - ./mysql/config/mysql-dev.cnf:/etc/my.cnf
       - ./mysql/datadir:/var/lib/mysql
     networks:
       - internal
-      - external
+      # - external
   pma:
     # Akses dengan http://domain/pma/ (wajib dengan slash)
     image: phpmyadmin/phpmyadmin
