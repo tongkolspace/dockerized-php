@@ -1,0 +1,78 @@
+version: '3.8'
+services:
+  php-fpm:
+    volumes:
+      - ../wordpress:/var/www/html
+      - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+      - ./php-fpm/php-fpm-prod.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
+    env_file:
+      - .env-dev-tongkolspace
+  nginx:
+    depends_on:
+      - php-fpm
+      - redis
+    networks:
+      - internal
+      - external
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wordpress-${APP_NAME}.tls=true"
+      - "traefik.http.routers.wordpress-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.wordpress-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
+      - "traefik.http.routers.wordpress-${APP_NAME}.entrypoints=web,websecure"
+      - "traefik.http.routers.wordpress-${APP_NAME}.service=wordpress-${APP_NAME}"
+      - "traefik.http.services.wordpress-${APP_NAME}.loadbalancer.server.port=80"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.tls=true"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.entrypoints=admin"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.service=wordpress-admin-${APP_NAME}"
+      - "traefik.http.services.wordpress-admin-${APP_NAME}.loadbalancer.server.port=57710"
+      - "traefik.docker.network=${NETWORK}"
+    ports: !reset []
+  redis:
+    volumes:
+      - ./redis/redis-prod.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - internal
+  workspace-wordpress:
+    env_file:
+      - .env-dev-tongkolspace
+    ports: !reset []
+    networks:
+      - internal
+      - external
+  supervisor:
+    image: tongkolspace/supervisor:8.1-v1.0.1
+    container_name: workspace-supervisor-${APP_NAME}
+    build:
+      context: ./supervisor
+      dockerfile: Dockerfile
+    volumes:
+      - ./php-fpm/php-prod.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+      - ../wordpress:/var/www/html
+      - ./supervisor/cron/cronjob-wordpress:/tmp/cronjob
+      - ./supervisor/supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
+      - ./supervisor/supervisor.conf/wordpress.conf:/etc/supervisor/conf.d/wordpress.conf
+    env_file:
+      - .env-dev-local
+    environment:
+      TZ: "${TZ}"
+    networks:
+      - internal
+      - external
+  db:
+    volumes:
+      - ./mysql/config/mysql-prod.cnf:/etc/my.cnf
+      - ./mysql/datadir:/var/lib/mysql
+    networks:
+      - internal
+      - external
+networks:
+  internal:
+    name: ${APP_NAME}-${NETWORK}
+  external:
+    external: true
+    name: ${NETWORK}
+  
