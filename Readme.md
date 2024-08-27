@@ -11,13 +11,11 @@ sed -i '/^wordpress\/\*/d' .gitignore
 git init
 
 #cp docker/.env-sample docker/.env
-bash wrapper.sh copy_env .env-sample .env
+bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local
 bash init.sh download_wordpress
 
-# Ganti password pada file .env
-nano docker/.env
-
-bash wrapper.sh up
+# State up docker compose
+bash wrapper.sh dev-local up
 ```
 
 | Sevice  | URL |
@@ -25,16 +23,16 @@ bash wrapper.sh up
 | WordPress | http://wordpress.local |
 | Admin | http://wordpress.local:57710 |
 
-Menjalankan `env` production
+Menjalankan `env` dev-tonjoo
 
 ```
-bash wrapper.sh down
+bash wrapper.sh dev-local down
 
-# Ganti password pada file .env-dev-local dan .env-dev-proxy
-bash wrapper.sh copy_env .env-dev-local .env-dev-local-sample
-bash wrapper.sh copy_env .env-dev-proxy .env-dev-proxy-sample
+# Ganti password pada file .env-dev-local dan .env-dev-tongkolspace
+bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local
+bash wrapper.sh copy_env .env-dev-tongkolspace-sample .env-dev-tongkolspace
 
-bash wrapper.sh dev-local dev-proxy up
+bash wrapper.sh dev-local dev-tongkolspace up
 ```
 | Sevice  | URL |
 |------------|---------|
@@ -98,9 +96,9 @@ Untuk mempermudah management docker-compose gunakan file `./wrapper.sh`
 
 | Environment  | docker-compose | Penjelasan |
 |------------|---------|-----------|
-| dev local | docker-compose.yml | Tempat developer mengembangkan aplikasi menggunakan config mysql dan php development | 
-| dev local | docker-compose-dev-local.yml | Environment development dengan traefik + nginx. Aplikasi dijalankan dengan config php dan mysql production | 
-|                    | docker-compose-dev-proxy.yml | Reverse proxy untuk WordPress | 
+| dev local | docker-compose-dev-local.yml | Tempat developer mengembangkan aplikasi menggunakan config mysql dan php development | 
+| dev tonjoo | docker-compose-dev-local.yml | | 
+|                    | docker-compose-dev-tongkolspace.yml | Environment development dengan traefik + nginx. Aplikasi dijalankan dengan config php dan mysql production | 
 | production | docker-compose-prod-app.yml | Environment production | 
 
 
@@ -120,7 +118,7 @@ Jalankan dengan `wrapper.sh prod-aws up`
 
 - Aplikasi WordPress http://wordpress.local`
 - Admin Panel http://wordpress.local:57710/ 
-  - Gunakan user dan password pada htpsswd yang sudah dibuat
+  - Gunakan user dan password pada file .env sesuai environment
 
 ## Background Job
 
