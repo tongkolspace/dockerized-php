@@ -2,11 +2,7 @@ docker/mysql/datadir/*
 docker/nginx/log/*
 docker/nginx/tmp/*
 docker/traefik/certs/*
-# docker/*.env*
-docker/.env
-docker/.env-dev-local
-docker/.env-dev-proxy
-docker/.env-dev-tongkolspace
+docker/*.env*
 *.log
 *.sql
 .htpasswd
