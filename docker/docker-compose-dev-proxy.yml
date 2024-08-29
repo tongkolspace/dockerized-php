@@ -10,7 +10,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.tls=true"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.routers.traefik-dashboard-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
+      - "traefik.http.routers.traefik-dashboard-${APP_NAME}.rule=Host(`${DOMAIN_PROXY}`)"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.entrypoints=traefik-dashboard"
       - "traefik.http.routers.traefik-dashboard-${APP_NAME}.service=api@internal"
       # global redirect to https
@@ -55,7 +55,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-admin-${APP_NAME}.tls=true"
       - "traefik.http.routers.traefik-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.routers.traefik-admin-${APP_NAME}.rule=Host(`${DOMAIN_WORDPRESS}`)"
+      - "traefik.http.routers.traefik-admin-${APP_NAME}.rule=Host(`${DOMAIN_PROXY}`)"
       - "traefik.http.routers.traefik-admin-${APP_NAME}.entrypoints=admin-traefik"
       - "traefik.http.routers.traefik-admin-${APP_NAME}.service=traefik-admin-${APP_NAME}"
       - "traefik.http.services.traefik-admin-${APP_NAME}.loadbalancer.server.port=57710"
