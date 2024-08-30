@@ -4,7 +4,7 @@ Tambahkan host berikut
 127.0.0.1 wordpress.local proxy.dev.local
 ```
 
-Menjalankan `env` development
+## Menjalankan `env` local
 ```
 git clone git@github.com:tongkolspace/dockerized-php.git dockerized-php && cd dockerized-php && rm .git -rf
 sed -i '/^wordpress\/\*/d' .gitignore
@@ -23,7 +23,7 @@ bash wrapper.sh dev-local up
 | WordPress | http://wordpress.local |
 | Admin | http://wordpress.local:57710 |
 
-Menjalankan `env` dev-tonjoo
+## Menjalankan `env` dev-tonjoo
 
 ```
 bash wrapper.sh dev-local down
@@ -31,6 +31,22 @@ bash wrapper.sh dev-local down
 # Ganti password pada file .env-dev-local dan .env-dev-tongkolspace
 bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local
 bash wrapper.sh copy_env .env-dev-tongkolspace-sample .env-dev-tongkolspace
+
+bash wrapper.sh dev-local dev-tongkolspace up
+```
+| Sevice  | URL |
+|------------|---------|
+| WordPress | https://wordpress.local |
+| Admin | https://wordpress.local:57710 |
+
+## Menjalankan `env` dev-tonjoo + traefik
+```
+bash wrapper.sh dev-local down
+
+# Ganti password pada file .env-dev-local dan .env-dev-tongkolspace
+bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local
+bash wrapper.sh copy_env .env-dev-tongkolspace-sample .env-dev-tongkolspace
+bash wrapper.sh copy_env .env-dev-proxy-sample .env-dev-proxy
 
 bash wrapper.sh dev-local dev-tongkolspace up
 ```
@@ -47,7 +63,7 @@ Merupakah docker stack `production ready` untuk aplikasi PHP
 | Service  | Stack | Folder  | URL Domain |  Deskripsi |
 |------------|---------|-----------|-----------|-----------|
 | Admin Panel | nginx | `admin`| wordpress.local:57710 |  Admin tools (phpmyadmin etc)  |
-|   | nginx,traefik | `admin` | proxy.dev.local:57710 |  Traefik Dashboard  |
+|   | nginx,traefik | `admin` | wordpress.local:57712 |  Traefik Dashboard  |
 | CMS | WordPress| `wordpress` | wordpress.local |  WordPress  |
 
 
@@ -98,7 +114,8 @@ Untuk mempermudah management docker-compose gunakan file `./wrapper.sh`
 |------------|---------|-----------|
 | dev local | docker-compose-dev-local.yml | Tempat developer mengembangkan aplikasi menggunakan config mysql dan php development | 
 | dev tonjoo | docker-compose-dev-local.yml | | 
-|                    | docker-compose-dev-tongkolspace.yml | Environment development dengan traefik + nginx. Aplikasi dijalankan dengan config php dan mysql production | 
+|                    | docker-compose-dev-tongkolspace.yml | Environment development dengan traefik + nginx. Aplikasi dijalankan dengan config php dan mysql production |
+| dev proxy| docker-compose-dev-proxy.yml | Environment untuk menjalankan service traefik sebagai service proxy| 
 | production | docker-compose-prod-app.yml | Environment production | 
 
 
@@ -171,6 +188,13 @@ sesuaikan php ini sesuai kebutuhan pada php-fpm/php-(dev|prod).ini
 ## Nginx 
 
 Sesuaikan upstream service docker php fpm dan redis pada `nginx/conf.d-extra` jika dibutuhkan. Pastikan berjalan dengan user www-data
+
+## Traefik
+Service ini berada di dalam file `docker-compose-dev-proxy.yml`. Service traefik bisa diaktifkan pada server yang belum terdapat traefik ataupun pada pengujian `dev-tonjoo + traefik` di localhost. Untuk bisa menggunakan service traefik diperlukan ssl yang bisa dibuat dengan step berikut ini:
+```
+cd /proyek_docker/docker/traefik/certs
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
+```
 
 # Ownership
 
