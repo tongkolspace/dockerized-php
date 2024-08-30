@@ -48,7 +48,7 @@ bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local
 bash wrapper.sh copy_env .env-dev-tongkolspace-sample .env-dev-tongkolspace
 bash wrapper.sh copy_env .env-dev-proxy-sample .env-dev-proxy
 
-bash wrapper.sh dev-local dev-tongkolspace up
+bash wrapper.sh dev-local dev-tongkolspace dev-proxy up
 ```
 | Sevice  | URL |
 |------------|---------|
@@ -94,15 +94,15 @@ Untuk mempermudah management docker-compose gunakan file `./wrapper.sh`
 ./wrapper.sh run --rm --user=www-data workspace-wordpress bash
 
 # masuk ke console mysql
-# docker compose $compose_file exec db mysql -u root -p$MYSQL_ROOT_PASSWORD
+# docker compose $compose_file exec db mariadb -u root -p$MYSQL_ROOT_PASSWORD
 ./wrapper.sh exec mysql-console
 
 # dump db 
-# docker compose $compose_file exec -T db mysqldump -u root -p$MYSQL_ROOT_PASSWORD $2 > ../$2.sql
+# docker compose $compose_file exec -T db mariadb-dump -u root -p$MYSQL_ROOT_PASSWORD $2 > ../$2.sql
 ./wrapper.sh exec mysql-dump [nama-db] 
 
 # import
-# docker compose $compose_file exec -T db mysql -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
+# docker compose $compose_file exec -T db mariadb -u root -p$MYSQL_ROOT_PASSWORD $2 < ../$3
 ./wrapper.sh exec mysql-import [nama-db] [nama-import-file]
 
 ```
@@ -191,7 +191,7 @@ Sesuaikan upstream service docker php fpm dan redis pada `nginx/conf.d-extra` ji
 
 ## Traefik
 Service ini berada di dalam file `docker-compose-dev-proxy.yml`. Service traefik bisa diaktifkan pada server yang belum terdapat traefik ataupun pada pengujian `dev-tonjoo + traefik` di localhost. Untuk bisa menggunakan service traefik diperlukan ssl yang bisa dibuat dengan step berikut ini:
-```
+```sh
 cd /proyek_docker/docker/traefik/certs
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
 ```
@@ -304,7 +304,6 @@ Untuk menggunakan cache WordPress ganti php-fpm pada `nginx/sites-enabled/defaul
 #include common-extra/php-fpm.conf;
 #include common-extra/php-fpm-fcgi-cache.conf;
 include common-extra/php-fpm-redis-cache.conf;
-
 ```
 
 Jika halaman tidak ingin dicache bisa mengirimkan header `no-cache` hal ini bisa diatur dari halaman berikut pada WordPress `wp-admin/options-general.php?page=exclude-cache`
