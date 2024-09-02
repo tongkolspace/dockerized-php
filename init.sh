@@ -98,7 +98,7 @@ then
     setup_fake_https_cert
     setup_network
 
-    echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh up"
+    echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh dev-local up"
     echo "Untuk instalasi WordPress otomatis jalankan bash init.sh install_wordpress setelah menjalankan docker"
 
 elif [ "$1" == "setup_htaccess" ]

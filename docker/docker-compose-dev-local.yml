@@ -76,10 +76,6 @@ services:
     networks:
       - internal
       - external
-    ports:
-      # Bakend Laravel
-      - 8000:8000
-      - 5173:5173
   db:
     image: mariadb:11.3.2
     container_name: db-wordpress-${APP_NAME}
