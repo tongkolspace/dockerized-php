@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - ROLE_BACKGROUND=true
-      - ROLE_WEB=true
+      - ROLE_NGINX=true
       - ROLE_PHP_FPM=true
     env_file:
       - .env-dev-local

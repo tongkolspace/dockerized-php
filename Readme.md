@@ -41,3 +41,13 @@ bash wrapper.sh dev-local dev-tongkolspace dev-proxy up
 | Admin | https://wordpress.local:57710 |
 | Admin Traefik | https://proxy.dev.local:57710 |
 
+# Tips
+
+## Supervisorctl
+
+Untuk mengatur service yang berjalan gunakan `supervisorctl`
+
+```
+ supervisorctl -c /home/app/supervisor/supervisord-app.conf
+```
+

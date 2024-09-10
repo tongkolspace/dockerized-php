@@ -48,6 +48,7 @@ RUN apk add --no-cache \
   php${PHP_VERSION}-xmlreader \
   php${PHP_VERSION}-xmlwriter \
   php${PHP_VERSION}-cli \  
+  apache2-utils \
   tzdata \
   iputils \
   redis \
@@ -61,7 +62,6 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     mv wp-cli.phar /usr/local/bin/wp
 
 # Make sure files/folders needed by the processes are accessible when they run under the app user
-RUN chown -R app:app /var/www/html /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp
 
 ###############
 # Configure
@@ -77,7 +77,6 @@ COPY ./docker/app/nginx/empty /etc/nginx/empty
 # Admin Panel
 COPY ./admin /var/www/admin
 COPY ./docker/app/nginx/.htpasswd /etc/nginx/.htpasswd
-COPY ./docker/app/nginx/sites-available/admin.conf /etc/nginx/sites-enabled/admin.conf
 
 # Make sure files/folders needed by the processes are accessable when they run under the app user
 RUN chown -R app:app /var/www/html /run /var/lib/nginx /var/log/nginx
@@ -118,6 +117,7 @@ EXPOSE 80 57710
 
 COPY --chown=app docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 
+RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp /etc/nginx
 USER app
 # Set entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

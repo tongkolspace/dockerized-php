@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      - ROLE_WEB=true
+      - ROLE_NGINX=true
     volumes:
       # Nginx
       - ./app/nginx/nginx.conf:/etc/nginx/nginx.conf

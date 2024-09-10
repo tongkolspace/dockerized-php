@@ -13,9 +13,14 @@ if [ "$ROLE_BACKGROUND" = "true" ]; then
     # crontab /home/app/cron/wordpress.cron
 fi
 
-if [ "$ROLE_WEB" = "true" ]; then
+if [ "$ROLE_NGINX" = "true" ]; then
     cat /home/app/supervisor/conf.d/nginx.conf >> /home/app/supervisor/supervisord-app.conf
     add_newline
+
+    # Update .htpasswd
+    if [ -n "$ADMIN_PANEL_USERNAME" ] && [ -n "$ADMIN_PANEL_PASSWORD" ]; then
+        htpasswd -bc /etc/nginx/.htpasswd "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
+    fi
 fi
 
 if [ "$ROLE_PHP_FPM" = "true" ]; then

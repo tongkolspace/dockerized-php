@@ -23,9 +23,9 @@ check_folder() {
 }
 
 setup_htaccess() {
-    sudo htpasswd -bc "$script_dir/docker/app/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
+    htpasswd -bc "$script_dir/docker/app/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
 
-    sudo chown "$USER:www-data" "$script_dir/wordpress/" -R
+    sudo chown "$USER:$USER" "$script_dir/wordpress/" -R
     sudo chmod 775 "$script_dir/wordpress/" -R
 
     echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"

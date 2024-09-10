@@ -2,10 +2,6 @@ services:
   wordpress:
     image: app-wordpress-${APP_NAME}:${APP_TAG} 
     ports: !reset 
-    volumes: !override
-      # WordPress
-      - ../wordpress_uploads:/var/www/html/wp-content/uploads
-      - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wordpress-${APP_NAME}.tls=true"

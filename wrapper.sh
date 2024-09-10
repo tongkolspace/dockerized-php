@@ -16,8 +16,11 @@ function help_wrapper {
 function load_env {
     # Source the .env file
     if [ -f $1 ]; then
-        echo "source $1"
-        export $(grep -v '^#' $1 | xargs)
+        # Menggunakan 'set -a' untuk mengekspor semua variabel yang dibaca
+        set -a
+        # Membaca file tanpa menjalankan isinya
+        source "$1" >/dev/null 2>&1
+        set +a
     else
         echo "No .env file found in $1"
     fi
