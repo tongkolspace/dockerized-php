@@ -1,6 +1,6 @@
 docker/mysql/datadir/*
-docker/nginx/log/*
-docker/nginx/tmp/*
+docker/app/nginx/log/*
+docker/app/nginx/tmp/*
 docker/traefik/certs/*
 docker/*.env*
 *.log
@@ -8,3 +8,4 @@ docker/*.env*
 .htpasswd
 .vscode
 wordpress/*
+wordpress_uploads/*
