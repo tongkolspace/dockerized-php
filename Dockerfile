@@ -78,8 +78,6 @@ COPY ./docker/app/nginx/empty /etc/nginx/empty
 COPY ./admin /var/www/admin
 COPY ./docker/app/nginx/.htpasswd /etc/nginx/.htpasswd
 
-# Make sure files/folders needed by the processes are accessable when they run under the app user
-RUN chown -R app:app /var/www/html /run /var/lib/nginx /var/log/nginx
 
 ###############
 # Configure
