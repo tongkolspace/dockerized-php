@@ -1,59 +1,57 @@
-ARG ALPINE_VERSION=3.20
-FROM alpine:${ALPINE_VERSION}
-LABEL Maintainer="Tim de Pater <code@trafex.nl>"
-LABEL Description="Lightweight container with Nginx 1.26 & PHP 8.2 based on Alpine Linux."
+ARG UBUNTU_VERSION=24.04
+FROM ubuntu:${UBUNTU_VERSION}
+LABEL Maintainer="Todi <t@tonjoo.id>"
+LABEL Description="PHP Web App Container"
+ARG PHP_VERSION=8.2
+ENV EDITOR=nano
+ENV HOME=/home/app
+
 # Setup document root
 WORKDIR /var/www/html
 
-ARG PHP_VERSION=82
+# Install necessary packages and PHP
+# Install necessary packages and PHP
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository ppa:ondrej/php && \
+    add-apt-repository ppa:wordops/nginx-wo -uy && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    nginx-custom \
+    nginx-wo \
+    php${PHP_VERSION} \
+    php${PHP_VERSION}-fpm \
+    php${PHP_VERSION}-cli \
+    php${PHP_VERSION}-common \
+    php${PHP_VERSION}-mysql \
+    php${PHP_VERSION}-zip \
+    php${PHP_VERSION}-gd \
+    php${PHP_VERSION}-mbstring \
+    php${PHP_VERSION}-curl \
+    php${PHP_VERSION}-xml \
+    php${PHP_VERSION}-bcmath \
+    apache2-utils \
+    tzdata \
+    iputils-ping \
+    redis-tools \
+    nano \
+    supervisor && \
+    apt-get autoremove -y && \
+    apt-get purge -y --auto-remove && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create user and home folder
-# Create home directory for app user
-
-# Add User
-RUN addgroup -g 1000 app \
-  && adduser -u 1000 -G app -h /home/app -s /bin/sh -D app \
-  && chown app:app /home/app \
-  && mkdir -p /tmp/nginx \
-  && chown -R app:app /tmp/nginx
-
-ENV EDITOR nano
-
-# Set the home directory for app
-ENV HOME /home/app
-
-# Install packages and remove default server definition
-RUN apk add --no-cache \
-  curl \
-  nginx \
-  nginx-mod-http-redis2 \
-  nginx-mod-http-vts \
-  nginx-mod-http-headers-more \
-  php${PHP_VERSION} \
-  php${PHP_VERSION}-ctype \
-  php${PHP_VERSION}-curl \
-  php${PHP_VERSION}-dom \
-  php${PHP_VERSION}-fileinfo \
-  php${PHP_VERSION}-fpm \
-  php${PHP_VERSION}-gd \
-  php${PHP_VERSION}-intl \
-  php${PHP_VERSION}-mbstring \
-  php${PHP_VERSION}-mysqli \
-  php${PHP_VERSION}-opcache \
-  php${PHP_VERSION}-openssl \
-  php${PHP_VERSION}-phar \
-  php${PHP_VERSION}-session \
-  php${PHP_VERSION}-tokenizer \
-  php${PHP_VERSION}-xml \
-  php${PHP_VERSION}-xmlreader \
-  php${PHP_VERSION}-xmlwriter \
-  php${PHP_VERSION}-cli \  
-  apache2-utils \
-  tzdata \
-  iputils \
-  redis \
-  nano \
-  supervisor 
+# Remove existing ubuntu user and create new app user
+RUN if getent passwd ubuntu > /dev/null; then \
+        userdel -r ubuntu; \
+    fi && \
+    if getent group ubuntu > /dev/null; then \
+        groupdel ubuntu; \
+    fi && \
+    groupadd -g 1000 app && \
+    useradd -u 1000 -g app -d /home/app -s /bin/bash -m app && \
+    mkdir -p /tmp/nginx && \
+    chown -R app:app /tmp/nginx
 
 
 # Install WP-CLI
@@ -61,12 +59,8 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
 
-# Make sure files/folders needed by the processes are accessible when they run under the app user
-
-###############
-# Configure
 # Nginx Config
-###############
+RUN rm -rf /etc/nginx/sites-available/* /etc/nginx/sites-enabled/*
 COPY ./docker/app/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY ./docker/app/nginx/common /etc/nginx/common
 COPY ./docker/app/nginx/conf.d /etc/nginx/conf.d
@@ -74,51 +68,32 @@ COPY ./docker/app/nginx/sites-available /etc/nginx/sites-available
 COPY ./docker/app/nginx/sites-available/wordpress.conf /etc/nginx/sites-enabled/wordpress.conf
 COPY ./docker/app/nginx/snippets /etc/nginx/snippets
 COPY ./docker/app/nginx/empty /etc/nginx/empty
-# Admin Panel
-COPY ./admin /var/www/admin
 COPY ./docker/app/nginx/.htpasswd /etc/nginx/.htpasswd
 
-
-###############
-# Configure
 # Web Apps
-###############
-ADD  --chown=app ./wordpress /var/www/html/
-ADD  --chown=app ./admin /var/www/admin/
+COPY --chown=app ./wordpress /var/www/html/
+COPY --chown=app ./admin /var/www/admin/
 
-RUN chmod -R 444 /var/www/html
-RUN chmod -R 644 /var/www/html/wp-content
-RUN find /var/www/html -type d -exec chmod 555 {} +
+RUN chmod -R 444 /var/www/html && \
+    chmod -R 644 /var/www/html/wp-content && \
+    find /var/www/html -type d -exec chmod 555 {} +
 
-###############
-# Configure
-# PHP-FPM
-###############
-ENV PHP_INI_DIR /etc/php${PHP_VERSION}
-COPY ./docker/app/php-fpm/php-fpm-prod.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
-COPY ./docker/app/php-fpm/php-prod.ini ${PHP_INI_DIR}/conf.d/custom.ini
+# PHP-FPM Config
+COPY ./docker/app/php-fpm/php-fpm-prod.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
+COPY ./docker/app/php-fpm/php-prod.ini /etc/php/${PHP_VERSION}/fpm/conf.d/custom.ini
 
-# Make symlink 
 RUN ln -s /usr/sbin/php-fpm${PHP_VERSION} /usr/bin/php-fpm
-RUN ln -s /usr/bin/php${PHP_VERSION} /usr/bin/php
 
-# Configure supervisord
+# Supervisor Config
 COPY --chown=app ./docker/app/supervisor /home/app/supervisor
 COPY --chown=app ./docker/app/cron /home/app/cron
 
-# Switch to use a non-root user from here on
-
-# Add application
-
-# Expose the port nginx is reachable on
+# Expose ports
 EXPOSE 80 57710
 
 COPY --chown=app docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp /etc/nginx
 USER app
-# Set entrypoint
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-# Configure a healthcheck to validate that everything is up&running
-# HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping || exit 1
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

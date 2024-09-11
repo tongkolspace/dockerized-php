@@ -1,9 +1,18 @@
 services:
-  wordpress:
-    container_name: wordpress-dev-tongkolspace-${APP_NAME}
-    image: app-wordpress-${APP_NAME}:${APP_TAG} 
-    ports: !reset 
-    volumes: !override
+  wordpress: !reset 
+  wordpress-container:
+    container_name: wordpress-dev-container-${APP_NAME}
+    image: gitea.tonjoo.com/tonjoo/wordpress-ubuntu:${APP_TAG} 
+    environment:
+      - ROLE_BACKGROUND=true
+      - ROLE_NGINX=true
+      - ROLE_PHP_FPM=true
+    env_file:
+      - .env-dev-local
+    networks:
+      - internal
+      - external
+    volumes: 
       # WordPress
       - ../wordpress_uploads:/var/www/html/wp-content/uploads
       - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf

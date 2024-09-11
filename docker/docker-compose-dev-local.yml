@@ -1,6 +1,7 @@
 services:
   wordpress:
     image: app-wordpress-${APP_NAME}:${APP_TAG} 
+    container_name: wordpress-dev-local-${APP_NAME}
     build:
       context: ../
       dockerfile: Dockerfile

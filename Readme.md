@@ -41,6 +41,18 @@ bash wrapper.sh dev-local dev-tongkolspace dev-proxy up
 | Admin | https://wordpress.local:57710 |
 | Admin Traefik | https://proxy.dev.local:57710 |
 
+## Menjalankan `env` `dev-container`
+
+Merupakan environment untuk testing container.
+Menggunakan images dari private registry
+
+```
+bash wrapper.sh copy_env .env-dev-container-sample .env-dev-container
+bash wrapper.sh dev-local dev-container dev-proxy up
+```
+
+Pada konfigurasi ini mounting volumes hanya digunakan untuk persistance data seperti misalnya WordPress uploads folder
+
 # Tips
 
 ## Supervisorctl
