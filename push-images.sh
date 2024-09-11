@@ -40,7 +40,18 @@ fi
 # Set version from last commit hash
 VERSION=$COMMIT
 
-# Rest of the script remains the same
-# ...
+# Build images
+docker build . -t wordpress-ubuntu -f Dockerfile
+docker tag wordpress-ubuntu gitea.tonjoo.com/tonjoo/wordpress-ubuntu:$VERSION
+docker tag wordpress-ubuntu gitea.tonjoo.com/tonjoo/wordpress-ubuntu:latest
+docker push gitea.tonjoo.com/tonjoo/wordpress-ubuntu:$VERSION
+docker push gitea.tonjoo.com/tonjoo/wordpress-ubuntu:latest
+
+# Build Alpine images
+# docker build . -t wordpress-alpine -f DockerfileAlpine
+# docker tag wordpress-alpine gitea.tonjoo.com/tonjoo/wordpress-alpine:$VERSION
+# docker tag wordpress-alpine gitea.tonjoo.com/tonjoo/wordpress-alpine:latest
+# docker push gitea.tonjoo.com/tonjoo/wordpress-alpine:$VERSION
+# docker push gitea.tonjoo.com/tonjoo/wordpress-alpine:latest
 
 echo "Images pushed successfully with version $VERSION and latest tags."
