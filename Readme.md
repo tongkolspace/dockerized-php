@@ -44,9 +44,11 @@ bash wrapper.sh dev-local dev-tongkolspace dev-proxy up
 ## Menjalankan `env` `dev-container`
 
 Merupakan environment untuk testing container.
-Menggunakan images dari private registry
+Menggunakan images dari private registry. 
+Sebelum menggunakan environment ini, images harus di push ke private registry dahulu 
 
 ```
+bash push-images.sh 
 bash wrapper.sh copy_env .env-dev-container-sample .env-dev-container
 bash wrapper.sh dev-local dev-container dev-proxy up
 ```
