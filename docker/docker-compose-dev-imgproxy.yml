@@ -12,12 +12,17 @@ version: '3'
 services:
 ################################################################################
   nginx-imgproxy:
-    image: tongkolspace/nginx-ee:v1.0.2
+    image: app-wordpress-${APP_NAME}:${APP_TAG} 
+    container_name: imgproxy-gateway-${APP_NAME}
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    environment:
+      - ROLE_NGINX=true
     restart: unless-stopped
     # build:
     #   context: ./imgproxy/nginx
     #   dockerfile: Dockerfile
-    container_name: imgproxy-gateway-${APP_NAME}
     volumes:
       - ./nginx/empty:/var/www/html
       # - ./nginx/sites-enabled/admin-traefik.conf:/etc/nginx/sites-enabled/admin.conf
@@ -28,6 +33,7 @@ services:
       - ./imgproxy/nginx/dhparam.pem:/etc/nginx/dhparam.pem
       - ./imgproxy/nginx/conf.d-extra:/etc/nginx/conf.d-extra
       - ./imgproxy/nginx/sites-enabled:/etc/nginx/sites-enabled
+      - ./imgproxy/nginx/sites-available:/etc/nginx/sites-available
       - ./imgproxy/www:/home:cached
       # - ./certs:/etc/nginx/certs:cached
       - ./nginx/tmp/nginx-imgproxy:/tmp/nginx

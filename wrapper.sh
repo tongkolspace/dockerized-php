@@ -21,8 +21,7 @@ function load_env {
         # Membaca file tanpa menjalankan isinya
         source "$1" >/dev/null 2>&1
         set +a
-    else
-        echo "No .env file found in $1"
+        echo "load_env : $1"
     fi
 }
 

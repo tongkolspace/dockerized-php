@@ -92,7 +92,7 @@ COPY --chown=app ./docker/app/cron /home/app/cron
 # Expose ports
 EXPOSE 80 57710
 
-COPY --chown=app docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --chown=app ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp /etc/nginx
 USER app

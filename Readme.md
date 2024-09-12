@@ -34,7 +34,7 @@ Tambahkan host berikut
 git clone git@github.com:tongkolspace/dockerized-php.git dockerized-php && cd dockerized-php && rm .git -rf
 sed -i '/^wordpress*/d' .gitignore
 git init
-
+git add ./docker/.env*-sample 
 bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local
 bash init.sh setup_htaccess
 bash wrapper.sh dev-local up

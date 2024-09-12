@@ -5,7 +5,6 @@ docker/traefik/certs/*
 docker/*.env*
 *.log
 *.sql
-.htpasswd
 .vscode
 wordpress/*
 wordpress_uploads/*

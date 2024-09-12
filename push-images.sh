@@ -11,19 +11,23 @@ countdown() {
     echo -e "\nProceeding..."
 }
 
-# Get current git branch
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# Image name
+IMAGE_NAME_1="wordpress-ubuntu"
+# IMAGE_NAME_2="wordpress-alpine"
 
-# Get last commit hash
-COMMIT=$(git rev-parse --short HEAD)
+# Input current directory as GIT_LOCATION
+GIT_LOCATION=$(pwd)
 
-# Get last commit message
-MESSAGE=$(git log -1 --pretty=%B)
+BRANCH=$(git -C "$GIT_LOCATION" rev-parse --abbrev-ref HEAD)
+COMMIT=$(git -C "$GIT_LOCATION" rev-parse --short HEAD)
+MESSAGE=$(git -C "$GIT_LOCATION" log -1 --pretty=%B)
+
 
 echo "Git Status"
 echo "branch: $BRANCH"
 echo "commit: $COMMIT"
 echo "message: $MESSAGE"
+echo "images: $IMAGE_NAME_1 "
 
 
 # Check if --force flag is used
@@ -47,17 +51,17 @@ fi
 VERSION=$COMMIT
 
 # Build images
-docker build . -t wordpress-ubuntu -f Dockerfile
-docker tag wordpress-ubuntu gitea.tonjoo.com/tonjoo/wordpress-ubuntu:$VERSION
-docker tag wordpress-ubuntu gitea.tonjoo.com/tonjoo/wordpress-ubuntu:latest
-docker push gitea.tonjoo.com/tonjoo/wordpress-ubuntu:$VERSION
-docker push gitea.tonjoo.com/tonjoo/wordpress-ubuntu:latest
+docker build . -t $IMAGE_NAME_1 -f Dockerfile
+docker tag $IMAGE_NAME_1 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:$VERSION
+docker tag $IMAGE_NAME_1 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:latest
+docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:$VERSION
+docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:latest
 
 # Build Alpine images
-docker build . -t wordpress-alpine -f DockerfileAlpine
-docker tag wordpress-alpine gitea.tonjoo.com/tonjoo/wordpress-alpine:$VERSION
-docker tag wordpress-alpine gitea.tonjoo.com/tonjoo/wordpress-alpine:latest
-docker push gitea.tonjoo.com/tonjoo/wordpress-alpine:$VERSION
-docker push gitea.tonjoo.com/tonjoo/wordpress-alpine:latest
+# docker build . -t $IMAGE_NAME_2 -f DockerfileAlpine
+# docker tag $IMAGE_NAME_2 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_2:$VERSION
+# docker tag $IMAGE_NAME_2 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_2:latest
+# docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_2:$VERSION
+# docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_2:latest
 
 echo "Images pushed successfully with version $VERSION and latest tags."
