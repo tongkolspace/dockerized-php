@@ -1,15 +1,21 @@
 services:
-  wordpress:
-    container_name: wordpress-dev-tongkolspace-${APP_NAME}
-    image: app-wordpress-${APP_NAME}:${APP_TAG} 
-    ports: !reset 
-    volumes: !override
+  wordpress: !reset 
+  wordpress-container:
+    container_name: wordpress-dev-container-${APP_NAME}
+    image: gitea.tonjoo.com/tonjoo/wordpress-ubuntu:${APP_TAG} 
+    environment:
+      - ROLE_BACKGROUND=true
+      - ROLE_NGINX=true
+      - ROLE_PHP_FPM=true
+    env_file:
+      - .env-dev-local
+    networks:
+      - internal
+      - external
+    volumes: 
       # WordPress
       - ../wordpress_uploads:/var/www/html/wp-content/uploads
       - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
-      # PHP 
-      - ./app/php-fpm/php-fpm-prod.conf:/etc/php82/php-fpm.d/www.conf
-      - ./app/php-fpm/php-prod.ini:/etc/php82/conf.d/custom.ini
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wordpress-${APP_NAME}.tls=true"
@@ -25,10 +31,4 @@ services:
       - "traefik.http.routers.wordpress-admin-${APP_NAME}.service=wordpress-admin-${APP_NAME}"
       - "traefik.http.services.wordpress-admin-${APP_NAME}.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
-  redis:
-    volumes: !override
-      - ./redis/redis-prod.conf:/usr/local/etc/redis/redis.conf
-  db:
-    volumes: !override
-      - ./mysql/datadir:/var/lib/mysql
-      - ./mysql/config/mysql-prod.cnf:/etc/my.cnf
+

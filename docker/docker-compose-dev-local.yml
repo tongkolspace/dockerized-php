@@ -1,81 +1,57 @@
-version: '3.8'
 services:
-  php-fpm:
-    # sesuaikan php ini
-    image: tongkolspace/php-fpm:8.1-v1.0.1
-    container_name: php-fpm-wordpress-${APP_NAME}
-    restart: unless-stopped
+  wordpress:
+    image: app-wordpress-${APP_NAME}:${APP_TAG} 
+    container_name: wordpress-dev-local-${APP_NAME}
     build:
-      context: ./php-fpm
+      context: ../
       dockerfile: Dockerfile
+    environment:
+      - ROLE_BACKGROUND=true
+      - ROLE_NGINX=true
+      - ROLE_PHP_FPM=true
     env_file:
       - .env-dev-local
-    environment:
-      TZ: ${TZ}
-    volumes:
-      - ../wordpress:/var/www/html
-      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ./php-fpm/php-fpm-dev.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
-    networks:
-      - internal
-      - external
-  nginx:
-    image: tongkolspace/nginx-ee:v1.0.2
-    container_name: nginx-wordpress-${APP_NAME}
-    restart: unless-stopped
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    volumes:
-      - ../wordpress:/var/www/html
-      - ../admin:/var/www/admin
-      - ./nginx/sites-enabled/admin-dev.conf:/etc/nginx/sites-enabled/admin.conf
-      # - ./nginx/sites-enabled/wordpress-subfolder.conf:/etc/nginx/sites-enabled/default
-      - ./nginx/sites-enabled/wordpress.conf:/etc/nginx/sites-enabled/default
-      - ./nginx/log:/var/log/nginx
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/common-extra:/etc/nginx/common-extra
-      - ./nginx/conf.d-extra:/etc/nginx/conf.d-extra
-      - ./nginx/conf.d/cloudflare.conf:/etc/nginx/conf.d/cloudflare.conf
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
-      - ./nginx/tmp/nginx:/tmp/nginx
-    depends_on:
-      - redis
-    networks:
-      - internal
-      - external
-    environment:
-      TZ: ${TZ}
     ports:
       - 80:80
       - 57710:57710
+    networks:
+      - internal
+      - external
+    volumes: 
+      # WordPress
+      - ../wordpress:/var/www/html
+      - ../wordpress_uploads:/var/www/html/wp-content/uploads
+      # Nginx
+      - ./app/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./app/nginx/common:/etc/nginx/common
+      - ./app/nginx/conf.d:/etc/nginx/conf.d
+      - ./app/nginx/sites-available:/etc/nginx/sites-available
+      - ./app/nginx/sites-available/wordpress.conf:/etc/nginx/sites-enabled/wordpress.conf
+      - ./app/nginx/snippets:/etc/nginx/snippets
+      - ./app/nginx/empty:/etc/nginx/empty
+      # Admin Panel
+      - ../admin:/var/www/admin
+      - ./app/nginx/.htpasswd:/etc/nginx/.htpasswd
+      - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
+      # PHP 
+      - ./app/php-fpm/php-fpm-dev.conf:/etc/php82/php-fpm.d/www.conf
+      - ./app/php-fpm/php-dev.ini:/etc/php82/conf.d/custom.ini
+      # supervisor & cron
+      - ./app/supervisor/conf.d:/home/app/supervisor/conf.d
+      - ./app/cron:/home/app/cron
+      # entrypoint
+      - ./app/entrypoint.sh:/usr/local/bin/entrypoint.sh
   redis:
     image: redis:latest
     container_name: redis-wordpress-${APP_NAME}
     restart: unless-stopped
     volumes:
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis/redis-dev.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
     environment:
       TZ: ${TZ}
     networks:
       - internal
-  workspace-wordpress:
-    image: tongkolspace/workspace:8.1-v1.0.1
-    container_name: workspace-wordpress-${APP_NAME}
-    build:
-      context: ./workspace
-      dockerfile: Dockerfile
-    volumes:
-      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ../wordpress:/var/www/html
-    env_file:
-      - .env-dev-local
-    environment:
-      TZ: "${TZ}"
-    networks:
-      - internal
-      - external
   db:
     image: mariadb:11.3.2
     container_name: db-wordpress-${APP_NAME}
