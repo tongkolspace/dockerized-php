@@ -86,9 +86,10 @@ COPY ./docker/app/nginx/.htpasswd /etc/nginx/.htpasswd
 ADD  --chown=app ./wordpress /var/www/html/
 ADD  --chown=app ./admin /var/www/admin/
 
-RUN chmod -R 444 /var/www/html
-RUN chmod -R 644 /var/www/html/wp-content
-RUN find /var/www/html -type d -exec chmod 555 {} +
+RUN chmod -R 444 /var/www/html && \
+    chmod -R 644 /var/www/html/wp-content && \
+    find /var/www/html -type d -exec chmod 555 {} + &&\
+    chmod 755 /var/www/html/wp-content
 
 ###############
 # Configure
