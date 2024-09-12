@@ -13,6 +13,11 @@ log:
 entrypoints:
   web:
     address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
   admin:
     address: ":57710"
   admin-traefik:

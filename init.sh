@@ -23,9 +23,9 @@ check_folder() {
 }
 
 setup_htaccess() {
-    sudo htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
+    htpasswd -bc "$script_dir/docker/app/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
 
-    sudo chown "$USER:www-data" "$script_dir/wordpress/" -R
+    sudo chown "$USER:$USER" "$script_dir/wordpress/" -R
     sudo chmod 775 "$script_dir/wordpress/" -R
 
     echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
@@ -53,7 +53,7 @@ setup_network() {
 install_wordpress() {
     # Run the WordPress Install
     # bash wrapper.sh up -d
-    bash wrapper.sh run --rm -v ./wordpress:/var/www/html workspace-wordpress wp core install --url="http://$DOMAIN_WORDPRESS" --title='Site title' --admin_user='admin' --admin_password='123456' --admin_email='admin@example.com'
+    bash wrapper.sh dev-local exec wordpress  wp core install --url="http://$DOMAIN_WORDPRESS" --title='Site title' --admin_user='admin' --admin_password='123456' --admin_email='admin@example.com'
     echo "Akses     : http://$DOMAIN_WORDPRESS"
     echo "Username  : admin"
     echo "Password  : 123456"
@@ -63,7 +63,7 @@ install_wordpress() {
 if [[ "$1" =~ ^(dev-|prod-|staging-|pre-prod-) ]]; then
     load_env "$script_dir/docker/.env-$1"
     shift 1
-else 
+elif [[ "$1" != "clean" ]]; then
     load_env "$script_dir/docker/.env-dev-local"
 fi
 # exit
@@ -77,9 +77,10 @@ then
 
     # Check if wordpress directory exists, if not create directory wordpress
     mkdir "$script_dir/wordpress"
+    mkdir "$script_dir/wordpress_uploads"
     
     # Download WordPress
-    docker run --rm -v ./wordpress:/var/www/html tongkolspace/workspace:8.1-v1.0.1 wp core download
+    bash wrapper.sh dev-local exec wordpress wp core download
 
     # Install redis plugin
     if [ ! -d "$script_dir/wordpress/wp-content/mu-plugins" ]; then
@@ -94,12 +95,11 @@ then
     # cp "$script_dir/docker/.env-sample" docker/.env
     # cp "$script_dir/docker/.env-dev-local-sample" docker/.env-dev-local
     # cp "$script_dir/docker/.env-dev-proxy-sample" docker/.env-dev-proxy
-    setup_htaccess
+    # setup_htaccess
     setup_fake_https_cert
     setup_network
 
-    echo "Instalasi WordPress dockerized selesai, jalankan dengan : bash wrapper.sh dev-local up"
-    echo "Untuk instalasi WordPress otomatis jalankan bash init.sh install_wordpress setelah menjalankan docker"
+    echo "Untuk instalasi WordPress otomatis jalankan bash init.sh install_wordpress"
 
 elif [ "$1" == "setup_htaccess" ]
 then
@@ -110,11 +110,13 @@ then
 elif [ "$1" == "clean" ]
 then
     echo "Clean WordPress and .env file.."
-    sudo rm "$script_dir/wordpress" -rf
-    # rm "$script_dir/docker/.env"
-    # rm "$script_dir/docker/.env-dev-local"
-    # rm "$script_dir/docker/.env-dev-proxy"
-    sudo rm -rf "$script_dir/docker/nginx/.htpasswd"
+    sudo find "$script_dir/wordpress" -type f -exec rm -f {} +
+    sudo find "$script_dir/wordpress_uploads" -type f -exec rm -f {} +
+    rm "$script_dir/docker/.env-dev-local"
+    rm "$script_dir/docker/.env-dev-tongkolspace"
+    rm "$script_dir/docker/.env-dev-tongkolspace-k8"
+    rm "$script_dir/docker/.env-dev-proxy"
+    sudo rm -rf "$script_dir/docker/app/nginx/.htpasswd"
     sudo rm -rf "$script_dir/docker/mysql/datadir/" 
 else 
     echo "penggunaan"
