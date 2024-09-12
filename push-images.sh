@@ -51,11 +51,23 @@ fi
 VERSION=$COMMIT
 
 # Build images
-docker build . -t $IMAGE_NAME_1 -f Dockerfile
-docker tag $IMAGE_NAME_1 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:$VERSION
-docker tag $IMAGE_NAME_1 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:latest
-docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:$VERSION
-docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:latest
+if docker build . -t $IMAGE_NAME_1 -f $SCRIPT_DIR/Dockerfile; then
+    echo "Build successful. Tagging and pushing images..."
+    docker tag $IMAGE_NAME_1 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:$VERSION
+    docker tag $IMAGE_NAME_1 gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:latest
+    
+    # Push images
+    if docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:$VERSION && \
+       docker push gitea.tonjoo.com/tonjoo/$IMAGE_NAME_1:latest; then
+        echo "Images successfully pushed to registry."
+    else
+        echo "Failed to push images to registry."
+        exit 1
+    fi
+else
+    echo "Build failed. Aborting push operation."
+    exit 1
+fi
 
 # Build Alpine images
 # docker build . -t $IMAGE_NAME_2 -f DockerfileAlpine
