@@ -31,7 +31,9 @@ RUN apt-get update && \
     php${PHP_VERSION}-curl \
     php${PHP_VERSION}-xml \
     php${PHP_VERSION}-bcmath \
+    gettext-base \
     apache2-utils \
+    iproute2 \
     tzdata \
     iputils-ping \
     redis-tools \
@@ -55,6 +57,7 @@ RUN if getent passwd ubuntu > /dev/null; then \
 
 
 # Install WP-CLI
+ENV PAGER=cat
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
@@ -68,7 +71,6 @@ COPY ./docker/app/nginx/sites-available /etc/nginx/sites-available
 COPY ./docker/app/nginx/sites-available/wordpress.conf /etc/nginx/sites-enabled/wordpress.conf
 COPY ./docker/app/nginx/snippets /etc/nginx/snippets
 COPY ./docker/app/nginx/empty /etc/nginx/empty
-COPY ./docker/app/nginx/.htpasswd /etc/nginx/.htpasswd
 
 # Web Apps
 COPY --chown=app ./wordpress /var/www/html/
@@ -90,7 +92,7 @@ COPY --chown=app ./docker/app/supervisor /home/app/supervisor
 COPY --chown=app ./docker/app/cron /home/app/cron
 
 # Expose ports
-EXPOSE 80 57710
+EXPOSE 8000 57710
 
 COPY --chown=app ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 

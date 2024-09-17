@@ -28,5 +28,11 @@ if [ "$ROLE_PHP_FPM" = "true" ]; then
     add_newline
 fi
 
+# Set default value for REDIS_HOST if not provided
+REDIS_HOST=${REDIS_HOST:-redis}
+
+# Use envsubst to replace variables and write to the final config file
+envsubst  < /etc/nginx/conf.d/upstream.conf.template > /etc/nginx/conf.d/upstream.conf
+
 # Run supervisord with the generated configuration
 exec /usr/bin/supervisord -c /home/app/supervisor/supervisord-app.conf

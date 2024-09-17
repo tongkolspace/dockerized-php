@@ -1,0 +1,7 @@
+upstream php-fpm-docker {
+    server unix:/run/php-fpm.sock;
+}
+
+upstream redis-docker {
+    server ${REDIS_HOST}:6379;
+}

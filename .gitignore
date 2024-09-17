@@ -1,10 +1,12 @@
 docker/mysql/datadir/*
+docker/app/nginx/conf.d/upstream.conf
 docker/app/nginx/log/*
 docker/app/nginx/tmp/*
 docker/traefik/certs/*
 docker/*.env*
 *.log
 *.sql
+.htpasswd
 .vscode
 wordpress/*
 wordpress_uploads/*
