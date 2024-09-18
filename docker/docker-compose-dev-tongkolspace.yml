@@ -25,6 +25,11 @@ services:
       - "traefik.http.routers.wordpress-admin-${APP_NAME}.service=wordpress-admin-${APP_NAME}"
       - "traefik.http.services.wordpress-admin-${APP_NAME}.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
+    env_file:
+      - .env-dev-local
+    networks:
+      - internal
+      - external
   redis:
     volumes: !override
       - ./redis/redis-prod.conf:/usr/local/etc/redis/redis.conf

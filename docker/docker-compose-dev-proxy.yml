@@ -60,6 +60,8 @@ services:
       - "traefik.http.routers.traefik-admin-${APP_NAME}.service=traefik-admin-${APP_NAME}"
       - "traefik.http.services.traefik-admin-${APP_NAME}.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
+    env_file:
+      - .env-dev-local
     networks:
       - internal
       - external
