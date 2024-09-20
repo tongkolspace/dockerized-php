@@ -73,13 +73,10 @@ COPY ./docker/app/nginx/snippets /etc/nginx/snippets
 COPY ./docker/app/nginx/empty /etc/nginx/empty
 
 # Web Apps
-COPY --chown=app ./wordpress /var/www/html/
-COPY --chown=app ./admin /var/www/admin/
+COPY --chown=app  --chmod=555 ./wordpress /var/www/html/
+COPY --chown=app  --chmod=555 ./admin /var/www/admin/
 
-RUN chmod -R 444 /var/www/html && \
-    chmod -R 644 /var/www/html/wp-content && \
-    find /var/www/html -type d -exec chmod 555 {} + &&\
-    chmod 755 /var/www/html/wp-content
+RUN chmod 755 /var/www/html/wp-content
 
 # PHP-FPM Config
 COPY ./docker/app/php-fpm/php-fpm-prod.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
