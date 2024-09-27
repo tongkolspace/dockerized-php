@@ -24,10 +24,6 @@ check_folder() {
 
 setup_htaccess() {
     htpasswd -bc "$script_dir/docker/app/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
-
-    sudo chown "$USER:$USER" "$script_dir/wordpress/" -R
-    sudo chmod 775 "$script_dir/wordpress/" -R
-
     echo "Admin Panel berjalan di port 57710 user = $ADMIN_PANEL_USERNAME | password = $ADMIN_PANEL_PASSWORD"
 }
 
@@ -59,7 +55,6 @@ install_wordpress() {
     echo "Password  : 123456"
 }
 
-
 if [[ "$1" =~ ^(dev-|prod-|staging-|pre-prod-) ]]; then
     load_env "$script_dir/docker/.env-$1"
     shift 1
@@ -73,14 +68,17 @@ then
     install_wordpress
 elif [ "$1" == "download_wordpress" ]
 then
-    check_folder "$script_dir/$1";
-
     # Check if wordpress directory exists, if not create directory wordpress
     mkdir "$script_dir/wordpress"
     mkdir "$script_dir/wordpress_uploads"
-    
+    sudo chmod 777 "$script_dir/wordpress/" -R
     # Download WordPress
-    bash wrapper.sh dev-local exec wordpress wp core download
+    docker run -it --rm \
+    --volume "$script_dir/wordpress:/var/www/html" \
+    wordpress:cli-php8.3 \
+    wp core download --path=/var/www/html
+    sudo chmod 775 "$script_dir/wordpress/" -R
+    sudo chown "$USER:$USER" "$script_dir/wordpress/" -R
 
     # Install redis plugin
     if [ ! -d "$script_dir/wordpress/wp-content/mu-plugins" ]; then
@@ -110,8 +108,7 @@ then
 elif [ "$1" == "clean" ]
 then
     echo "Clean WordPress and .env file.."
-    sudo find "$script_dir/wordpress" -type f -exec rm -f {} +
-    sudo find "$script_dir/wordpress_uploads" -type f -exec rm -f {} +
+    rm "$script_dir/wordpress" -rf
     rm "$script_dir/docker/.env-dev-local"
     rm "$script_dir/docker/.env-dev-tongkolspace"
     rm "$script_dir/docker/.env-dev-tongkolspace-k8"

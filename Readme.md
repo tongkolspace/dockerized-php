@@ -37,8 +37,8 @@ git init
 git add ./docker/.env*-sample 
 bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local
 bash init.sh setup_htaccess
-bash wrapper.sh dev-local up
 bash init.sh download_wordpress
+bash wrapper.sh dev-local up
 bash init.sh install_wordpress
 ```
 
