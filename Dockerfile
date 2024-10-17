@@ -31,6 +31,7 @@ RUN apt-get update && \
     php${PHP_VERSION}-curl \
     php${PHP_VERSION}-xml \
     php${PHP_VERSION}-bcmath \
+    php${PHP_VERSION}-intl \
     gettext-base \
     apache2-utils \
     iproute2 \
