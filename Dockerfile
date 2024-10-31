@@ -95,7 +95,7 @@ EXPOSE 8000 57710
 COPY --chown=app ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp /etc/nginx
+RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp /etc/nginx /var/lib/php/sessions
 USER app
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
