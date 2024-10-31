@@ -1,0 +1,78 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: reverse-proxy-${APP_NAME}
+    restart: unless-stopped
+    command:
+      - "--configFile=/etc/traefik/traefik.yml"
+    labels:
+      - "traefik.enable=true"
+      # - "traefik.http.routers.traefik-dashboard-${APP_NAME}.tls=true"
+      # - "traefik.http.routers.traefik-dashboard-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.traefik-dashboard-${APP_NAME}.rule=Host(`${DOMAIN_PROXY}`)"
+      - "traefik.http.routers.traefik-dashboard-${APP_NAME}.entrypoints=traefik-dashboard"
+      - "traefik.http.routers.traefik-dashboard-${APP_NAME}.service=api@internal"
+      # global redirect to https
+      # - "traefik.http.routers.http-catchall-${APP_NAME}.rule=hostregexp(`{host:.+}`)"
+      # - "traefik.http.routers.http-catchall-${APP_NAME}.entrypoints=web,admin"
+      # - "traefik.http.routers.http-catchall-${APP_NAME}.middlewares=redirect-to-https-${APP_NAME}"
+      # # middleware redirect
+      # - "traefik.http.middlewares.redirect-to-https-${APP_NAME}.redirectscheme.scheme=https"
+    ports:
+      - "80:80" 
+      - "443:443"
+      - "57710:57710"
+      # Debugging
+      # - "57711:57711"
+    volumes:
+      - ./traefik/traefik-http.yml:/etc/traefik/traefik.yml
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/logs:/logs/
+      - ./traefik/certs:/certs/
+      - acme:/acme/
+    networks:
+      - external
+  nginx-traefik:
+    image: app-wordpress-${APP_NAME}:${APP_TAG} 
+    container_name: nginx-traefik-admin-${APP_NAME}
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - ROLE_NGINX=true
+    volumes:
+      # Nginx
+      - ./app/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./app/nginx/common:/etc/nginx/common
+      - ./app/nginx/conf.d:/etc/nginx/conf.d
+      - ./app/nginx/sites-available:/etc/nginx/sites-available
+      - ./app/nginx/sites-available/admin-traefik-http.conf:/etc/nginx/sites-enabled/admin.conf
+      - ./app/nginx/snippets:/etc/nginx/snippets
+      - ./app/nginx/empty:/etc/nginx/empty
+    labels:
+      - "traefik.enable=true"
+      # - "traefik.http.routers.traefik-admin-${APP_NAME}.tls=true"
+      # - "traefik.http.routers.traefik-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.traefik-admin-${APP_NAME}.rule=Host(`${DOMAIN_PROXY}`)"
+      - "traefik.http.routers.traefik-admin-${APP_NAME}.entrypoints=admin"
+      - "traefik.http.routers.traefik-admin-${APP_NAME}.service=traefik-admin-${APP_NAME}"
+      - "traefik.http.services.traefik-admin-${APP_NAME}.loadbalancer.server.port=57710"
+      - "traefik.docker.network=${NETWORK}"
+    env_file:
+      - .env-dev-local
+    networks:
+      - internal
+      - external
+    depends_on:
+      - traefik
+networks:
+  internal:
+    name: ${APP_NAME}-${NETWORK}
+  external:
+    external: true
+    name: ${NETWORK}
+
+volumes:
+   acme:

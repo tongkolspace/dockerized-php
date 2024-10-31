@@ -1,0 +1,36 @@
+api:
+  dashboard: true
+providers:
+  docker:
+    exposedbydefault: false
+  file:
+    filename: "/etc/traefik/dynamic.yml"       
+    watch: true        
+log:
+  level: debug  # for error level logging
+  filepath: "/logs/error.log"
+  # format: common
+entrypoints:
+  web:
+    address: ":80"
+    # http:
+    #   redirections:
+    #     entryPoint:
+    #       to: websecure
+    #       scheme: https
+  admin:
+    address: ":57710"
+  admin-traefik:
+    address: ":57712"
+  traefik-dashboard:
+    address: ":57711"
+  websecure:
+    address: ":443"
+certificatesresolvers:
+  letsencrypt:
+    acme:
+      email: "email@email.com"
+      storage: "/acme/acme.json"
+      tlschallenge: true  
+accesslog:
+  filepath: "/logs/access.log"
