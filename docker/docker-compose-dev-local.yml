@@ -1,5 +1,6 @@
 services:
   wordpress:
+    restart: unless-stopped
     image: app-wordpress-${APP_NAME}:${APP_TAG} 
     container_name: wordpress-dev-local-${APP_NAME}
     build:
