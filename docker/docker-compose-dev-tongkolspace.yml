@@ -8,8 +8,8 @@ services:
       - ../wordpress_uploads:/var/www/html/wp-content/uploads
       - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
       # PHP 
-      - ./app/php-fpm/php-fpm-prod.conf:/etc/php82/php-fpm.d/www.conf
-      - ./app/php-fpm/php-prod.ini:/etc/php82/conf.d/custom.ini
+      # - ./app/php-fpm/php-fpm-dev.conf:/etc/php/8.2/php-fpm.d/www.conf
+      # - ./app/php-fpm/php-dev.ini.template:/etc/php/8.2/fpm/conf.d/custom.ini.template
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wordpress-${APP_NAME}.tls=true"
