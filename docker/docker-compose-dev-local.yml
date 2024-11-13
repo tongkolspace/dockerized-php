@@ -32,11 +32,11 @@ services:
       - ./app/nginx/empty:/etc/nginx/empty
       # Admin Panel
       - ../admin:/var/www/admin
-      - ./app/nginx/.htpasswd:/etc/nginx/.htpasswd
+      # - ./app/nginx/.htpasswd:/etc/nginx/.htpasswd
       - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
       # PHP 
-      - ./app/php-fpm/php-fpm-dev.conf:/etc/php82/php-fpm.d/www.conf
-      - ./app/php-fpm/php-dev.ini:/etc/php82/conf.d/custom.ini
+      - ./app/php-fpm/php-fpm-dev.conf:/etc/php/8.2/php-fpm.d/www.conf
+      - ./app/php-fpm/php-dev.ini.template:/etc/php/8.2/fpm/conf.d/custom.ini.template
       # supervisor & cron
       - ./app/supervisor/conf.d:/home/app/supervisor/conf.d
       - ./app/cron:/home/app/cron

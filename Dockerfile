@@ -32,6 +32,7 @@ RUN apt-get update && \
     php${PHP_VERSION}-xml \
     php${PHP_VERSION}-bcmath \
     php${PHP_VERSION}-intl \
+    php${PHP_VERSION}-redis \
     gettext-base \
     apache2-utils \
     iproute2 \
@@ -70,6 +71,7 @@ COPY ./docker/app/nginx/common /etc/nginx/common
 COPY ./docker/app/nginx/conf.d /etc/nginx/conf.d
 COPY ./docker/app/nginx/sites-available /etc/nginx/sites-available
 COPY ./docker/app/nginx/sites-available/wordpress.conf /etc/nginx/sites-enabled/wordpress.conf
+COPY ./docker/app/nginx/sites-available/admin.conf /etc/nginx/sites-enabled/admin.conf
 COPY ./docker/app/nginx/snippets /etc/nginx/snippets
 COPY ./docker/app/nginx/empty /etc/nginx/empty
 
@@ -79,15 +81,18 @@ COPY --chown=app  --chmod=555 ./admin /var/www/admin/
 
 RUN chmod 755 /var/www/html/wp-content
 
+# Admin
+COPY --chown=app --chmod=555 ./admin /var/www/admin/
+
 # PHP-FPM Config
 COPY ./docker/app/php-fpm/php-fpm-prod.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
-COPY ./docker/app/php-fpm/php-prod.ini /etc/php/${PHP_VERSION}/fpm/conf.d/custom.ini
+COPY ./docker/app/php-fpm/php-prod.ini.template /etc/php/${PHP_VERSION}/fpm/conf.d/custom.ini.template
 
 RUN ln -s /usr/sbin/php-fpm${PHP_VERSION} /usr/bin/php-fpm
 
 # Supervisor Config
-COPY --chown=app ./docker/app/supervisor /home/app/supervisor
-COPY --chown=app ./docker/app/cron /home/app/cron
+COPY --chown=app:app ./docker/app/supervisor /home/app/supervisor
+COPY --chown=app:app ./docker/app/cron /home/app/cron
 
 # Expose ports
 EXPOSE 8000 57710
@@ -95,7 +100,25 @@ EXPOSE 8000 57710
 COPY --chown=app ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp /etc/nginx /var/lib/php/sessions
+RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /usr/local/bin/wp /etc/nginx /var/lib/php/sessions /etc/php/${PHP_VERSION}
 USER app
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+
+# # For Docker Images
+# FROM backend-dev AS backend-image
+
+# # Build Laravel Backend
+# # Remove vendor and node modules to prevent conflict
+# # Open write permission in storage folder
+# # Build Vendor and NPM install
+# COPY --chown=app:app --chmod=555 ./backend /var/www/html/
+# RUN chmod 755 /var/www/html/bootstrap/cache /var/www/html/vendor /var/www/html/package-lock.json /var/www/html /var/www/html/public && \
+#     cd /var/www/html/ && \
+#     composer install  --prefer-dist && \
+#     npm install && \
+#     npm run build && \
+#     php artisan storage:link && \
+#     php artisan optimize:clear && \
+#     chmod 555 /var/www/html /var/www/html/public

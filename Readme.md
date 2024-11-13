@@ -245,3 +245,11 @@ Untuk mengatur service yang berjalan gunakan `supervisorctl`
 ```
  supervisorctl -c /home/app/supervisor/supervisord-app.conf
 ```
+
+
+# Changelog
+
+## 13 November 2024
+
+- Menambahkan support redis pada Dockerfile dan juga php.ini config dinamis dari entrypoint
+- Default wp_debug dirubah ke true
