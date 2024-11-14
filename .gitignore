@@ -10,3 +10,5 @@ docker/*.env*
 .vscode
 wordpress/*
 wordpress_uploads/*
+wordpress/.env-wp
+

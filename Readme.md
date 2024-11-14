@@ -47,6 +47,12 @@ bash init.sh install_wordpress
 | WordPress | http://wordpress.local |
 | Admin | http://wordpress.local:57710 |
 
+## Menjalankan tanpa docker
+
+Copy `wordpress/.env-wp-sample` -> `.env-wp`, sesuaikan isinya dari `docker/.env-dev-local`
+Jika dalam proyek tidak ada `wordpress/.env-wp-sample` gunakan `docker/.env-dev-local` sebagai base
+
+
 ## Menjalankan `env` `dev-tongkolspace`
 
 Untuk menjalankan `dev-tongkolspace` pastikan `dev-local` sudah berjalan lancar
