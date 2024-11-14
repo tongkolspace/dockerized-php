@@ -49,9 +49,8 @@ bash init.sh install_wordpress
 
 ## Menjalankan tanpa docker
 
-Copy `wordpress/.env-wp-sample` -> `.env-wp`, sesuaikan isinya dari `docker/.env-dev-local`
-Jika dalam proyek tidak ada `wordpress/.env-wp-sample` gunakan `docker/.env-dev-local` sebagai base
-
+Copy `docker/.env-dev-local` -> `wordpress/.env-wp`, sesuaikan isinya dari `docker/.env-dev-local`
+WordPress akan meload `wordpress/.env-wp`
 
 ## Menjalankan `env` `dev-tongkolspace`
 

@@ -1,4 +1,5 @@
 **/*.log
 **/*.sql
+**/.env*
 wordpress/wp-content/uploads/*
 wordpress/.env* 
